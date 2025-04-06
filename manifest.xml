@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:type="TaskPaneApp">
+  <Id>12345678-9abc-def0-1234-56789abcdef0</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Nitish Choudhary</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="NLOOKUP Add-in"/>
+  <Description DefaultValue="Powerful alternative to VLOOKUP/XLOOKUP"/>
+  <AppDomains>
+    <AppDomain>https://localhost:3000</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Workbook"/>
+  </Hosts>
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://localhost:3000/functions.html"/>
+  </DefaultSettings>
+  <Permissions>ReadWriteDocument</Permissions>
+  <Requirements>
+    <Sets DefaultMinVersion="1.1">
+      <Set Name="CustomFunctionsRuntime" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+  <ExtendedPermissions>
+    <ExtendedPermission>CustomFunctions</ExtendedPermission>
+  </ExtendedPermissions>
+</OfficeApp>
