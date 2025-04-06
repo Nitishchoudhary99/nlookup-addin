@@ -1,31 +1,14 @@
-
 /**
- * NLOOKUP: A powerful lookup function that supports wildcards, multi-column return, etc.
- * @customfunction
- * @param {string} lookupValue The value to search for.
- * @param {range} lookupArray The range to search within.
- * @param {range} returnArray The range of values to return from.
- * @param {boolean} [exactMatch] TRUE for exact match, FALSE for partial/wildcard match.
- * @param {string} [notFoundText] Text to return if no match is found.
- * @returns {any[][]} The found value(s).
+ * NLOOKUP custom function - search a value in the first column and return a value in the same row from another column.
  */
-function NLOOKUP(lookupValue, lookupArray, returnArray, exactMatch = true, notFoundText = "Not Found") {
-    const result = [];
-    const lowerLookup = lookupValue.toLowerCase();
-
-    for (let i = 0; i < lookupArray.length; i++) {
-        let match = exactMatch
-            ? lookupArray[i][0].toLowerCase() === lowerLookup
-            : lowerLookup.includes("*")
-                ? new RegExp("^" + lowerLookup.replace(/\*/g, ".*") + "$", "i").test(lookupArray[i][0])
-                : lookupArray[i][0].toLowerCase().includes(lowerLookup);
-
-        if (match) {
-            result.push(returnArray[i]);
+function NLOOKUP(lookupValue, lookupRange, returnRange) {
+    for (let i = 0; i < lookupRange.length; i++) {
+        if (lookupRange[i][0] === lookupValue) {
+            return returnRange[i][0];
         }
     }
-
-    return result.length > 0 ? result : [[notFoundText]];
+    return "Not Found";
 }
 
+// Associate the function
 CustomFunctions.associate("NLOOKUP", NLOOKUP);
