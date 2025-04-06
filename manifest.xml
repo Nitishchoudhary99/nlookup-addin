@@ -1,29 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
-  <Id>12345678-9abc-def0-1234-56789abcdef0</Id>
+
+  <Id>f2bd239e-1000-4ad4-b8bb-d23ea5ed9dc4</Id>
   <Version>1.0.0.0</Version>
   <ProviderName>Nitish Choudhary</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="NLOOKUP Add-in"/>
-  <Description DefaultValue="Powerful alternative to VLOOKUP/XLOOKUP"/>
-  <AppDomains>
-    <AppDomain>https://localhost:3000</AppDomain>
-  </AppDomains>
+  <DisplayName DefaultValue="NLookup Add-in"/>
+  <Description DefaultValue="Excel Add-in to perform NLookup with custom JS logic"/>
+  <IconUrl DefaultValue="https://nitishchoudhary99.github.io/nlookup-addin/assets/icon-32.png"/>
+  <SupportUrl DefaultValue="https://nitishchoudhary99.github.io/nlookup-addin/"/>
+
   <Hosts>
     <Host Name="Workbook"/>
   </Hosts>
+
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/functions.html"/>
+    <SourceLocation DefaultValue="https://nitishchoudhary99.github.io/nlookup-addin/taskpane.html"/>
   </DefaultSettings>
+
   <Permissions>ReadWriteDocument</Permissions>
-  <Requirements>
-    <Sets DefaultMinVersion="1.1">
-      <Set Name="CustomFunctionsRuntime" MinVersion="1.1"/>
-    </Sets>
-  </Requirements>
-  <ExtendedPermissions>
-    <ExtendedPermission>CustomFunctions</ExtendedPermission>
-  </ExtendedPermissions>
+
+  <VersionOverrides Version="1.0">
+    <Hosts>
+      <Host Name="Workbook">
+        <AllFormFactors>
+          <ExtensionPoint xsi:type="CustomFunctions">
+            <Script>
+              <SourceLocation resid="functionFile"/>
+            </Script>
+            <Page>
+              <SourceLocation resid="taskpaneUrl"/>
+            </Page>
+            <Metadata>
+              <SourceLocation resid="metadata"/>
+            </Metadata>
+          </ExtensionPoint>
+        </AllFormFactors>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Urls>
+        <bt:Url id="functionFile" DefaultValue="https://nitishchoudhary99.github.io/nlookup-addin/functions.js"/>
+        <bt:Url id="taskpaneUrl" DefaultValue="https://nitishchoudhary99.github.io/nlookup-addin/taskpane.html"/>
+        <bt:Url id="metadata" DefaultValue="https://nitishchoudhary99.github.io/nlookup-addin/functions.json"/>
+      </bt:Urls>
+    </Resources>
+  </VersionOverrides>
 </OfficeApp>
+
