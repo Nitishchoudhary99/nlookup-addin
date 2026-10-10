@@ -205,7 +205,7 @@ namespace SmartPro
             {
                 if (!Design.IsPro(t.Id)) continue;
                 int left = Licence.TrialLeft(t.Id);
-                string state = pro ? "Unlocked" : Habit.WelcomeDay > 0 ? "Open (Pro Week)" : (left > 0 ? left + (left == 1 ? " free run left" : " free runs left") : "Free runs used");
+                string state = pro ? "Unlocked" : Habit.WelcomeDay > 0 ? "Open now" : (left > 0 ? left + (left == 1 ? " free run left" : " free runs left") : "Free runs used");
                 ListViewItem it = new ListViewItem(new[] { t.Caption, t.Tip, state });
                 it.ToolTipText = t.Tip;
                 if (!pro && left == 0 && Habit.WelcomeDay == 0) it.ForeColor = Red;

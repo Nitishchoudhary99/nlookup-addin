@@ -17,7 +17,7 @@ shows the value the user gets, no daily hook, and Pro was only mentioned at the 
 | Pro Week | - | For the first 7 days on a PC every Pro tool is open, without a key and without using the free runs (a "reverse trial"). Cards on day 1, the day before the end and after the end show what the user did with Pro. Existing users get their Pro Week when they first use 3.2. `ProPlan.WelcomeProDays` = 0 switches it off. |
 | Tips after a tool | - | A small card in the corner of the screen (it does not take the focus and closes by itself) shows the Pro tool that takes the job one step further, for example Clean -> Smart Analyst, Compare Two Lists -> Reconcile. At most 2 a day, 3 tool runs apart, the same tip 3 times ever; "No tips" turns them off. On the last free runs of a Pro tool it says what Pro members get. Pro members see, at most once a week, what Pro has saved them. |
 | Status bar greeting | - | When Excel starts: the streak, the time saved, the Pro Week day or the bonus runs waiting. |
-| DocBrisk Pro window | - | Shows the user's own time saved and what it is worth, the price per day, "Open (Pro Week)" during the Pro Week, and the bonus runs. |
+| DocBrisk Pro window | - | Shows the user's own time saved and what it is worth, the price per day, "Open now" during the Pro Week, and the bonus runs. |
 
 The settings for the offer are in `ProPlan.cs`: `WelcomeProDays` (7), `HourValueRupees` (400: what one hour of office
 time is worth, for "your time saved is worth about ..."; 0 hides those lines). The minutes per tool are in `Habit.cs`
