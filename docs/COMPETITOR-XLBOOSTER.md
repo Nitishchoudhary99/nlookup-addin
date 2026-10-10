@@ -34,7 +34,7 @@ Smart Dashboard, Email Automation (mail merge with PDF), Excel to Python / SQL, 
 | Sheet Manager | Sheet Manager | ➕ Sheet Manager: show / hide / very hide / rename (prefix, suffix, replace) / tab colour / move / sort / delete with backup |
 | Validation | Validation Tools, email validation | ➕⭐ Smart Validation: dropdowns (typed or from a column, kept sorted on a hidden sheet), no repeats, number and date ranges, **mobile, PIN, PAN, GSTIN, IFSC, Aadhaar**, email; circles the old cells that break the rule |
 | Formulas library | All XL Formulas | ➕ Formula Library: 41 recipes that **ask for your cells and write the formula** (two-condition lookup, SUMIFS between dates, overdue days, GST, EMI, CAGR ...) |
-| AI formulas | Ask AI, AI Formulas | ➕ AI Formula with Claude (Anthropic): your own words → formula for your columns + explanation. **You see exactly what is sent**; only headers by default |
+| AI formulas | Ask AI, AI Formulas | ➕⭐ AI Formula with Claude: your own words → formula for your columns + explanation. **No key or setup**: 3 a day free with a free DocBrisk key, 100 a day with Pro. **You see exactly what is sent**; only headers by default |
 | Lookups | "Fetch data without VLOOKUP" video | ⭐ Smart Lookup + `=SMARTLOOKUP`: matches through spaces, capitals, numbers stored as text; says how many rows VLOOKUP would miss; fuzzy option |
 | Fuzzy matching | – | ⭐ Fuzzy Merge, Fuzzy Duplicates, FUZZYLOOKUP, SIMILARITY |
 | Reconciliation | – | ⭐ Reconcile (books vs statement / GSTR-2B with tolerance), Sum Finder, Duplicate Payments, Compare by Key |
@@ -67,7 +67,7 @@ Smart Dashboard, Email Automation (mail merge with PDF), Excel to Python / SQL, 
 
 | Their edge | What to do |
 |---|---|
-| AI with no setup (the user does not need an API key) | Add an AI proxy on docbrisk.com that accepts a valid Pro key and calls Claude with your API key, then make AI Formula work for Pro users without their own key. Budget the cost per user per month first. |
+| ~~AI with no setup~~ | Done: the docbrisk.com proxy (repo `docbrisk-seo`). Set `ANTHROPIC_API_KEY` on the Worker and a monthly spend limit in the Anthropic console. |
 | Hindi / Hinglish videos and a large YouTube audience | Make 60-second videos per tool in Hindi and English: Smart Lookup, Focus Cell, Reconcile, Split to PDFs, Web Table. Lead with "VLOOKUP without #N/A". |
 | Lifetime plan | Consider a lifetime price (for example ₹4,999) once renewals are measured; it brings cash early but caps revenue per user. |
 | Installs on locked office laptops as an `.xlam` | The `.xll` with the per-user installer needs no admin rights either; say so on the download page. |

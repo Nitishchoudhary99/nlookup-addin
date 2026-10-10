@@ -16,7 +16,7 @@ the DocBrisk group, because they are used every day.
 | Sheet Manager | Free | Show, hide, very hide, rename (prefix / suffix / replace), tab colour, move, sort, delete (with backup) many sheets at once. |
 | Smart Validation | Free | Dropdowns (typed, or the sorted different values of a column), no repeats, number / date ranges, not-in-future dates, mobile, PIN, PAN, GSTIN, IFSC, Aadhaar, email, text length. Plain Excel validation. |
 | Formula Library | Free | 41 recipes; it asks for the cells and writes the formula, then offers to fill down. |
-| AI Formula | Pro | Your own words -> a formula for the active cell, with a short explanation, from Claude (`claude-opus-5-5`, low effort, with a server-side fallback model if a request is declined). Sends the request and the column headers; 3 sample rows only if ticked; the window shows what is sent. Uses the user's own Anthropic API key, kept encrypted with Windows DPAPI. |
+| AI Formula | Free 3 a day / Pro 100 a day | Your own words -> a formula for the active cell, with a short explanation. Goes through docbrisk.com with the user's DocBrisk key, so **no Anthropic key is needed on the PC**; the website checks the key, counts the uses and asks Claude. Sends the request and the column headers; 3 sample rows only if ticked; the window shows what is sent. Without any DocBrisk key it links to the free-key form (name + email). |
 | Swap Ranges | Free | Swaps two blocks of the same size, formulas included. |
 | Split to PDFs | Pro | One PDF per value of a column, header on every page, fit to width. |
 | File Organizer | Pro | List a folder's files in a sheet, rename them from the sheet, or sort them into sub-folders by type / month / first word. Every change is logged to `_DocBrisk_file_log.csv`. |
@@ -25,22 +25,22 @@ the DocBrisk group, because they are used every day.
 
 ### Build notes for 3.3
 
-- `LangVersion` is now `latest` (needed by the Anthropic SDK). The target is still .NET Framework 4.8.
-- `SmartPro.csproj` references the `Anthropic` NuGet package (12.55.0) and `System.Security` (DPAPI), and lists the
-  SDK and its dependencies in `ExcelAddInInclude` so they are packed into the `.xll`. **Check once on Windows** that the
-  packed `-packed.xll` loads and that AI Formula answers; if Excel-DNA cannot load a packed dependency, ship the DLLs
-  next to the `.xll` instead (the installer can copy them).
-- AI Formula needs the internet and the user's own key. For "AI without a key" put a proxy on docbrisk.com
-  (see the comparison document, section 4).
+- No new NuGet packages. Two Framework references were added: `System.Net.Http` and `System.Web.Extensions` (JSON).
+- AI Formula needs the docbrisk.com Worker with the AI proxy (repo `docbrisk-seo`, section "AI FORMULA PROXY" in
+  `seo-worker.js`) and the secret `ANTHROPIC_API_KEY` on that Worker. Until then the add-in shows
+  "AI Formula is not switched on on docbrisk.com yet".
+- For a test Worker, set the registry value `HKCU\Software\DocBrisk\SmartPro\AiProxyUrl` to its https URL.
 
 ### Status of version 3.3
 
 - Compiles with warnings as errors; logic tests pass under Mono (ribbon XML valid with all 90 buttons, tips table,
   AI reply parsing, SQL / Python export, formula recipes).
 - The Web Table page was run in Chromium (search, filters, sort, totals, theme, phone width, no script errors).
+- AI Formula was run end to end: the add-in's own code -> the real Worker in `wrangler dev` -> a stand-in for the
+  Anthropic API (Pro, free, daily limit, expired and invalid keys). Not yet against the live Anthropic API.
 - **Not run in Excel:** Navigator, Index, Focus Cell (overlay position at different zoom levels and frozen panes),
-  Sheet Manager, Validation (especially the PAN / GSTIN formulas), Formula Library, File Organizer, Split to PDFs,
-  and AI Formula against the live API (no API key was available here). Test these on Windows before publishing.
+  Sheet Manager, Validation (especially the PAN / GSTIN formulas), Formula Library, File Organizer, Split to PDFs.
+  Test these on Windows before publishing.
 
 ## What is new in 3.2: a reason to come back every day
 
@@ -196,7 +196,7 @@ chart as CSV, and print or save as PDF. It also works on a phone. The file carri
 | `FocusCell.cs` | the Focus Cell overlay |
 | `ValidationTools.cs` | Smart Validation |
 | `FormulaLibrary.cs` | the 41 formula recipes |
-| `AiFormula.cs` | AI Formula (Claude) |
+| `AiFormula.cs` | AI Formula (through the docbrisk.com proxy) |
 | `FileTools.cs` | File Organizer |
 | `ExportMore.cs` | Web Table, Table to SQL / Python |
 | `ProPlan.cs` | the prices and the words of the Pro offer |

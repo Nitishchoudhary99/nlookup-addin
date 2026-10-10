@@ -102,7 +102,7 @@ namespace SmartPro
                 int left = Licence.TrialLeft(tip[0]);
                 bool week = Habit.WelcomeDay > 0;
                 string button = "Try " + Design.CaptionOf(tip[0]);
-                string foot = week ? "Open during your Pro Week." : left > 0 ? left + (left == 1 ? " free run" : " free runs") + " to try it." : "Pro tool  -  " + ProPlan.PerDay + ".";
+                string foot = tip[0] == "aiformula" ? "3 a day free with a DocBrisk key, 100 a day with Pro." : week ? "Open during your Pro Week." : left > 0 ? left + (left == 1 ? " free run" : " free runs") + " to try it." : "Pro tool  -  " + ProPlan.PerDay + ".";
                 Toast.Show("Next step: " + Design.CaptionOf(tip[0]), tip[1], foot, button, tip[0], "See Pro", "licence", true);
                 Counted(id + ">" + tip[0]);
             }

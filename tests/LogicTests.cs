@@ -123,6 +123,20 @@ class T {
     }
     Eq(badRecipes, 0, "formula recipes: start with = and use known placeholders");
     Eq(recipes.Length, 41, "41 formula recipes");
+
+    // ---- AI Formula through docbrisk.com: reading the Worker's answers ----
+    Func<int, string, object> pp = (st, js) => Call("AiFormula", "ParseProxy", st, js);
+    Func<object, string, object> fld = (o, n) => o.GetType().GetField(n).GetValue(o);
+    object ok1 = pp(200, "{\"ok\":true,\"formula\":\"=SUMIFS($E:$E,$B:$B,B2)\",\"why\":\"Adds it.\",\"left\":99,\"limit\":100,\"tier\":\"Pro\"}");
+    Eq(fld(ok1,"Formula") + "|" + fld(ok1,"Left") + "|" + fld(ok1,"Tier") + "|" + (fld(ok1,"Error") ?? "none"), "=SUMIFS($E:$E,$B:$B,B2)|99|Pro|none", "proxy answer: formula and uses left");
+    object lim = pp(429, "{\"error\":\"Your 3 free AI formulas for today are used.\",\"code\":\"limit\",\"left\":0,\"limit\":3,\"tier\":\"Free\"}");
+    Eq(fld(lim,"Code") + "|" + fld(lim,"Tier") + "|" + (fld(lim,"Formula") ?? "null"), "limit|Free|null", "proxy answer: daily limit");
+    object none = pp(200, "{\"ok\":true,\"formula\":null,\"why\":\"Needs a macro.\",\"left\":5,\"limit\":100,\"tier\":\"Pro\"}");
+    Eq((fld(none,"Formula") ?? "null") + "|" + fld(none,"Why"), "null|Needs a macro.", "proxy answer: no formula possible");
+    object html = pp(502, "<html>Bad gateway</html>");
+    Eq(fld(html,"Code"), "bad_answer", "proxy answer: not JSON (office proxy page)");
+    object notEq = pp(200, "{\"formula\":\"SUM(A:A)\"}");
+    Eq(fld(notEq,"Formula"), null, "proxy answer: text without = is not inserted");
     Console.WriteLine(fails == 0 ? "ALL PASSED" : fails + " FAILED");
     Environment.Exit(fails == 0 ? 0 : 1);
   }

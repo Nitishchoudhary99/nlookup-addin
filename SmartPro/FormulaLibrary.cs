@@ -68,7 +68,7 @@ namespace SmartPro
             dynamic cell = Xl.App.ActiveCell;
             if (cell == null) { Ui.Info("Click the cell where the formula should go."); return; }
             string[] items = new string[All.Length + 1], keys = new string[All.Length + 1];
-            items[0] = "AI Formula (Pro): write any formula from your own words ...";
+            items[0] = "AI Formula: write any formula from your own words (3 a day free, 100 with Pro) ...";
             keys[0] = "ai any custom own words other write";
             for (int i = 0; i < All.Length; i++)
             {

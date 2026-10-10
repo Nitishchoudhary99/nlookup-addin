@@ -164,6 +164,9 @@ namespace SmartPro
             return cached;
         }
 
+        // the DocBrisk key kept on this PC (any tier), or null; AI Formula sends it to docbrisk.com to check the plan
+        public static string StoredKey { get { string k = ReadReg("Key"); return string.IsNullOrEmpty(k) ? null : k; } }
+
         public static bool IsProNow()
         {
             LicenceInfo li = Current();

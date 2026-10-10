@@ -3,50 +3,44 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
-using Anthropic;
-using Anthropic.Models.Beta.Messages;
 
 namespace SmartPro
 {
     // AI FORMULA: describe what you want in your own words (English or Hinglish), get one Excel formula for the active cell,
     // with a short explanation, using Claude.
+    //   - It goes through docbrisk.com with the user's DocBrisk key: no Anthropic key is needed on the PC.
+    //     The website checks the key and counts: Pro 100 a day, a free key 3 a day (set on the website), and asks
+    //     Claude with its own key and its own fixed instructions (seo-worker.js, "AI FORMULA PROXY").
     //   - What is sent: the request, the column headers of the table around the active cell and the cell address.
     //     Three sample rows only when the user ticks the box. The window shows exactly what will be sent.
-    //   - The API key is the user's own Anthropic key, kept encrypted for this Windows user (DPAPI).
     //   - Every other DocBrisk tool works offline; this is the only one that needs the internet.
     internal static class AiFormula
     {
         public const string Model = "claude-opus-5-5";
+        public const string ProxyUrl = "https://docbrisk.com/addins-api/ai/formula";
+        public const string FreeKeyUrl = "https://docbrisk.com/addins#ax-key";
 
-        const string SystemPrompt =
-            "You write Microsoft Excel formulas for office users in India (accounts, MIS, sales, HR).\n" +
-            "Reply in exactly this shape and nothing else:\n" +
-            "FORMULA: <one formula starting with =, written for the given cell, with English function names and commas between arguments>\n" +
-            "WHY: <one or two short sentences in plain English saying what it does and anything to check>\n" +
-            "Rules: use the real column letters and rows from the table description. Prefer functions that work in Excel 2016 " +
-            "(SUMIFS, COUNTIFS, INDEX/MATCH, IFERROR, TEXT, DATEDIF) unless the user says they have Excel 365; when an Excel 365 " +
-            "function such as XLOOKUP, FILTER or UNIQUE is clearly better, use it and say so in WHY. The formula must be ready to " +
-            "fill down. If the request cannot be done with a formula, write FORMULA: none and explain in WHY.";
-
-        // ---- the key (encrypted for the Windows user) ----
-        public static string Key
+        // a test or staging Worker can be set in the registry value AiProxyUrl (HKCU\Software\DocBrisk\SmartPro)
+        static string Endpoint
         {
             get
             {
-                string s = Settings.Get("AiKey");
-                if (string.IsNullOrEmpty(s)) return null;
-                try { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(s), null, DataProtectionScope.CurrentUser)); }
-                catch { return null; }
+                string u = Settings.Get("AiProxyUrl");
+                return !string.IsNullOrEmpty(u) && (u.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || u.StartsWith("http://127.0.0.1", StringComparison.Ordinal)) ? u : ProxyUrl;
             }
-            set
-            {
-                if (string.IsNullOrEmpty(value)) { Settings.Set("AiKey", ""); return; }
-                Settings.Set("AiKey", Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value.Trim()), null, DataProtectionScope.CurrentUser)));
-            }
+        }
+
+        // the answer of the docbrisk.com proxy
+        internal sealed class Answer
+        {
+            public string Formula, Why, Error, Code, Tier;
+            public int Left = -1, Limit = -1;
         }
 
         public static void Run()
@@ -123,28 +117,60 @@ namespace SmartPro
             return sb.ToString();
         }
 
-        // one request to Claude; returns the formula and the explanation
-        public static async Task<string[]> Ask(string key, string request, string context)
+        // through docbrisk.com with the DocBrisk key
+        public static async Task<Answer> AskDocBrisk(string licenceKey, string request, string context)
         {
-            AnthropicClient client = new AnthropicClient { ApiKey = key };
-            MessageCreateParams p = new MessageCreateParams
+            try { ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12; } catch { }
+            string body = new JavaScriptSerializer().Serialize(new Dictionary<string, string>
             {
-                Model = Model,
-                MaxTokens = 4000,
-                System = SystemPrompt,
-                OutputConfig = new BetaOutputConfig { Effort = Effort.Low },
-                // a request the main model declines is answered by a fallback model in the same call
-                Betas = new List<Anthropic.Core.ApiEnum<string, Anthropic.Models.Beta.AnthropicBeta>> { "server-side-fallback-2026-06-01" },
-                Fallbacks = new List<BetaFallbackParam> { new BetaFallbackParam { Model = "claude-opus-4-8" } },
-                Messages = new List<BetaMessageParam>
+                { "key", licenceKey }, { "request", request }, { "context", context }, { "client", "excel-" + Design.Version }
+            });
+            using (HttpClient http = new HttpClient())
+            {
+                http.Timeout = TimeSpan.FromSeconds(90);
+                using (StringContent content = new StringContent(body, Encoding.UTF8, "application/json"))
+                using (HttpResponseMessage res = await http.PostAsync(Endpoint, content).ConfigureAwait(false))
                 {
-                    new BetaMessageParam { Role = Role.User, Content = context + "\nRequest: " + request }
+                    string json = await res.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    return ParseProxy((int)res.StatusCode, json);
                 }
-            };
-            BetaMessage r = await client.Beta.Messages.Create(p).ConfigureAwait(false);
-            if (r.StopReason == "refusal") return new[] { null, "The request was declined. Try describing the calculation differently." };
-            string text = string.Join("", r.Content.Select(b => b.Value).OfType<BetaTextBlock>().Select(t => t.Text));
-            return Parse(text);
+            }
+        }
+
+        public static Answer ParseProxy(int status, string json)
+        {
+            Answer a = new Answer();
+            try
+            {
+                Dictionary<string, object> r = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(json);
+                a.Formula = Text(r, "formula");
+                a.Why = Text(r, "why");
+                a.Error = Text(r, "error");
+                a.Code = Text(r, "code");
+                a.Tier = Text(r, "tier");
+                a.Left = Whole(r, "left");
+                a.Limit = Whole(r, "limit");
+            }
+            catch
+            {
+                a.Error = "docbrisk.com sent an answer that could not be read (HTTP " + status + ").";
+                a.Code = "bad_answer";
+            }
+            if (status != 200 && a.Error == null) a.Error = "docbrisk.com answered HTTP " + status + ".";
+            if (a.Formula != null && !a.Formula.StartsWith("=", StringComparison.Ordinal)) a.Formula = null;
+            return a;
+        }
+
+        static string Text(Dictionary<string, object> r, string name)
+        {
+            object v;
+            return r != null && r.TryGetValue(name, out v) ? v as string : null;
+        }
+
+        static int Whole(Dictionary<string, object> r, string name)
+        {
+            object v;
+            return r != null && r.TryGetValue(name, out v) && v is int ? (int)v : -1;
         }
 
         public static string[] Parse(string text)
@@ -166,14 +192,16 @@ namespace SmartPro
     internal sealed class AiFormulaForm : Form
     {
         static readonly Color Navy = Color.FromArgb(15, 23, 42), Slate = Color.FromArgb(71, 85, 105), Blue = Color.FromArgb(37, 99, 235), Red = Color.FromArgb(185, 28, 28);
-        readonly TextBox ask = new TextBox(), keyBox = new TextBox(), result = new TextBox(), sent = new TextBox();
-        readonly Label why = new Label(), status = new Label();
+        readonly TextBox ask = new TextBox(), result = new TextBox(), sent = new TextBox();
+        readonly Label why = new Label(), status = new Label(), plan = new Label();
+        readonly LinkLabel getKey = new LinkLabel(), enterKey = new LinkLabel();
         readonly CheckBox withSample = new CheckBox(), fill = new CheckBox();
         readonly Button go = new Button(), insert = new Button();
         readonly string context, sample;
         readonly float z = 1f;
         public string Formula;
         public bool FillDown;
+        string leftNote = "";
 
         int S(int px) { return (int)Math.Round(px * z); }
 
@@ -202,7 +230,7 @@ namespace SmartPro
             ShowInTaskbar = false;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9.5f);
-            ClientSize = new Size(S(760), S(560));
+            ClientSize = new Size(S(760), S(544));
 
             Lbl("What should the formula do?  (your own words)", 16, 12, 700, 22, true);
             ask.Multiline = true;
@@ -243,6 +271,11 @@ namespace SmartPro
             insert.SetBounds(S(584), S(254), S(160), S(32));
             insert.Click += delegate
             {
+                if ((insert.Tag as string) == "pro")
+                {
+                    if (ProCentre.Show(null)) { insert.Tag = null; insert.Text = "Insert in " + cell; insert.Enabled = false; ShowPlan(); Say("Pro is active: 100 AI formulas a day.", Color.FromArgb(21, 128, 61)); }
+                    return;
+                }
                 Formula = result.Text.Trim();
                 FillDown = fill.Checked;
                 if (!Formula.StartsWith("=", StringComparison.Ordinal)) { Say("A formula starts with =.", Red); return; }
@@ -251,7 +284,7 @@ namespace SmartPro
             };
             Controls.Add(insert);
 
-            Lbl("What is sent to Claude (Anthropic) with your request:", 16, 296, 728, 20, true);
+            Lbl("What is sent to Claude (by Anthropic) with your request:", 16, 296, 728, 20, true);
             sent.Multiline = true;
             sent.ReadOnly = true;
             sent.ScrollBars = ScrollBars.Vertical;
@@ -259,33 +292,45 @@ namespace SmartPro
             sent.SetBounds(S(16), S(318), S(728), S(120));
             Controls.Add(sent);
 
-            Lbl("Your Anthropic API key (console.anthropic.com). Kept encrypted on this PC for your Windows user:", 16, 448, 728, 20, false);
-            keyBox.UseSystemPasswordChar = true;
-            keyBox.SetBounds(S(16), S(470), S(600), S(26));
-            string k = AiFormula.Key;
-            if (k != null) keyBox.Text = k;
-            Controls.Add(keyBox);
-            Button forget = new Button();
-            forget.Text = "Forget key";
-            forget.SetBounds(S(624), S(468), S(120), S(30));
-            forget.Click += delegate { AiFormula.Key = null; keyBox.Text = ""; Say("The key was removed from this PC.", Slate); };
-            Controls.Add(forget);
-
-            status.SetBounds(S(16), S(510), S(600), S(40));
+            plan.SetBounds(S(16), S(446), S(728), S(22));
+            plan.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            Controls.Add(plan);
+            getKey.Text = "Get a free DocBrisk key";
+            getKey.SetBounds(S(16), S(468), S(200), S(22));
+            getKey.LinkClicked += delegate { try { System.Diagnostics.Process.Start(AiFormula.FreeKeyUrl); } catch { } Say("Fill in your name and email on the page, copy the key, then press 'Enter my key'.", Slate); };
+            Controls.Add(getKey);
+            enterKey.Text = "Enter my key";
+            enterKey.SetBounds(S(224), S(468), S(120), S(22));
+            enterKey.LinkClicked += delegate { ProCentre.Show(null); ShowPlan(); };
+            Controls.Add(enterKey);
+            status.SetBounds(S(16), S(496), S(630), S(40));
             Controls.Add(status);
             Button close = new Button();
             close.Text = "Close";
             close.DialogResult = DialogResult.Cancel;
-            close.SetBounds(S(658), S(516), S(86), S(30));
+            close.SetBounds(S(658), S(500), S(86), S(30));
             Controls.Add(close);
             CancelButton = close;
-            ShowSent();
+            ShowPlan();
             ActiveControl = ask;
+        }
+
+        // which way the request goes, and what that means for the user
+        void ShowPlan()
+        {
+            string lic = Licence.StoredKey;
+            bool hasLic = !string.IsNullOrEmpty(lic) && Licence.Current().Valid;
+            if (hasLic && Licence.IsProNow()) { plan.Text = "Included in your Pro plan: 100 AI formulas a day. No other key needed."; plan.ForeColor = Color.FromArgb(21, 128, 61); }
+            else if (hasLic) { plan.Text = "Free key: 3 AI formulas a day. Pro: 100 a day (" + ProPlan.PerDay + ")."; plan.ForeColor = Navy; }
+            else { plan.Text = "Free with a DocBrisk key: 3 AI formulas a day. Get one in a minute (name + email)."; plan.ForeColor = Red; }
+            getKey.Visible = enterKey.Visible = !hasLic;
+            ShowSent();
         }
 
         void ShowSent()
         {
-            sent.Text = (withSample.Checked ? sample : context).Replace("\n", "\r\n") + "\r\nRequest: (your words above)";
+            string head = "(sent to docbrisk.com with your DocBrisk key, which checks your plan; docbrisk.com asks Claude)\r\n";
+            sent.Text = head + (withSample.Checked ? sample : context).Replace("\n", "\r\n") + "\r\nRequest: (your words above)";
         }
 
         void Say(string s, Color c)
@@ -297,16 +342,36 @@ namespace SmartPro
         async Task Generate()
         {
             string req = ask.Text.Trim();
-            string key = keyBox.Text.Trim();
             if (req.Length < 3) { Say("Describe what the formula should do first.", Red); return; }
-            if (key.Length < 20) { Say("Paste your Anthropic API key first (it starts with sk-ant-).", Red); return; }
-            AiFormula.Key = key;
+            string lic = Licence.StoredKey;
+            if (string.IsNullOrEmpty(lic) || !Licence.Current().Valid)
+            {
+                Say("Get a free DocBrisk key first (link above): 3 AI formulas a day, free.", Red);
+                return;
+            }
             go.Enabled = false;
             insert.Enabled = false;
             Say("Writing the formula ...", Slate);
             try
             {
-                string[] r = await AiFormula.Ask(key, req, withSample.Checked ? sample : context);
+                string[] r;
+                {
+                    AiFormula.Answer a = await AiFormula.AskDocBrisk(lic, req, withSample.Checked ? sample : context);
+                    if (a.Error != null)
+                    {
+                        Say(a.Error, Red);
+                        if (a.Code == "limit" || a.Code == "expired" || a.Code == "not_pro") enterKey.Visible = getKey.Visible = false;
+                        if ((a.Code == "limit" && a.Tier != "Pro") || a.Code == "expired" || a.Code == "not_pro")
+                        {
+                            insert.Text = "See Pro";
+                            insert.Enabled = true;
+                            insert.Tag = "pro";
+                        }
+                        return;
+                    }
+                    r = new[] { a.Formula, a.Why };
+                    if (a.Left >= 0) leftNote = "  " + a.Left + " AI " + (a.Left == 1 ? "formula" : "formulas") + " left today" + (a.Tier == "Free" ? " (Pro: 100 a day)." : ".");
+                }
                 if (r[0] == null)
                 {
                     result.Text = "";
@@ -318,12 +383,10 @@ namespace SmartPro
                     result.Text = r[0];
                     why.Text = r[1];
                     insert.Enabled = true;
-                    Say("Check the formula, change it if you like, then Insert.", Color.FromArgb(21, 128, 61));
+                    Say("Check the formula, change it if you like, then Insert." + leftNote, Color.FromArgb(21, 128, 61));
                 }
             }
-            catch (Anthropic.Exceptions.AnthropicUnauthorizedException) { Say("The API key was not accepted. Check it on console.anthropic.com.", Red); }
-            catch (Anthropic.Exceptions.AnthropicRateLimitException) { Say("Too many requests just now. Wait a minute and try again.", Red); }
-            catch (Exception ex) { Say("Could not reach Claude: " + ex.Message + "  (internet or proxy?)", Red); }
+            catch (Exception ex) { Say("Could not reach docbrisk.com: " + ex.Message + "  (internet or office proxy?)", Red); }
             finally { go.Enabled = true; }
         }
     }

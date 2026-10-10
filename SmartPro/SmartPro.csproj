@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>7.3</LangVersion>
     <AssemblyName>SmartPro</AssemblyName>
     <RootNamespace>SmartPro</RootNamespace>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -10,14 +10,11 @@
     <!-- Excel-DNA build settings -->
     <ExcelAddInName>Smart Pro</ExcelAddInName>
     <ExcelAddInExplicitExports>true</ExcelAddInExplicitExports>
-    <!-- AI Formula uses the official Anthropic SDK; pack it and its dependencies into the .xll -->
-    <ExcelAddInInclude>Anthropic.dll;Microsoft.Bcl.AsyncInterfaces.dll;Microsoft.Extensions.AI.Abstractions.dll;System.Buffers.dll;System.Collections.Immutable.dll;System.IO.Pipelines.dll;System.Memory.dll;System.Net.ServerSentEvents.dll;System.Numerics.Vectors.dll;System.Runtime.CompilerServices.Unsafe.dll;System.Text.Encodings.Web.dll;System.Text.Json.dll;System.Threading.Tasks.Extensions.dll</ExcelAddInInclude>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Use the same versions as your NLOOKUP project if you prefer fixed numbers -->
     <PackageReference Include="ExcelDna.AddIn" Version="1.*" />
-    <PackageReference Include="Anthropic" Version="12.55.0" />
     <PackageReference Include="ExcelDna.IntelliSense" Version="1.*" />
   </ItemGroup>
 
@@ -25,7 +22,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Security" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
 
 </Project>
