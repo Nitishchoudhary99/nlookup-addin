@@ -32,6 +32,8 @@ namespace SmartPro
             { "splitsheets", 15 }, { "splitfiles", 25 }, { "combsheets", 15 }, { "combfolder", 30 }, { "index", 5 }, { "pdfs", 10 },
             { "emailsheet", 4 }, { "unhideall", 3 }, { "protectall", 4 }, { "unprotectall", 4 }, { "links", 8 }, { "diet", 10 },
             { "sortsheets", 3 }, { "sheetsfromlist", 5 }, { "valuescopy", 5 },
+            { "navigator", 1 }, { "focus", 1 }, { "sheetmgr", 5 }, { "swap", 2 }, { "formulas", 5 }, { "aiformula", 10 },
+            { "validation", 8 }, { "fileorg", 20 }, { "splitpdfs", 25 }, { "webtable", 15 }, { "tablecode", 20 },
             { "inrfmt", 2 }, { "fycol", 5 }, { "words", 3 }, { "gstin", 8 }, { "backup", 1 }
         };
 

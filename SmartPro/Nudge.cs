@@ -36,14 +36,18 @@ namespace SmartPro
             { "custom", new[] { "analyst", "Your dashboard shows the numbers; Smart Analyst writes what they mean, ready to paste into an email." } },
             { "webdash", new[] { "mailparty", "Sending reports by hand? Mail to Each Party sends every customer or vendor only their own rows, in one go." } },
             { "splitsheets", new[] { "mailparty", "One sheet per party is ready. Mail to Each Party can email each of them their own rows straight away." } },
+            { "pdfs", new[] { "splitpdfs", "Need one PDF per party instead of one per sheet? Split to PDFs makes them from any column in one go." } },
             { "emailsheet", new[] { "mailparty", "Emailing one sheet at a time? Mail to Each Party prepares one email per party with only its own rows." } },
             { "combsheets", new[] { "combfolder", "Sheets combined. Combine Folder does the same for every Excel and CSV file in a folder." } },
-            { "explain", new[] { "audit", "Want the whole sheet checked, not one formula? Formula Risk Scan finds broken, overwritten and inconsistent formulas." } },
             { "iferror", new[] { "audit", "Hiding errors is quick; Formula Risk Scan shows where they come from and which formulas are risky." } },
             { "outliers", new[] { "analyst", "Unusual numbers marked. Smart Analyst explains them together with the trend and the main drivers." } },
             { "neat", new[] { "analyst", "The table looks good. Smart Analyst can write what it says, with charts." } },
             { "fycol", new[] { "ageing", "Dates in place. Ageing Report shows what is outstanding by party in 0-30, 31-60, 61-90 and 90+ days." } },
             { "unpivot", new[] { "forecast", "Now that the months are in one column, Forecast can project the next 3, 6 or 12 months with a likely range." } },
+            { "formulas", new[] { "aiformula", "Need a formula that is not in the list? AI Formula writes it from your own words, for your own columns, with a short explanation." } },
+            { "explain", new[] { "aiformula", "Want a new formula instead of explaining one? AI Formula writes it from your own words." } },
+            { "index", new[] { "fileorg", "Workbook tidy? File Organizer does the same for folders: list, rename in bulk, sort into sub-folders." } },
+            { "webtable", new[] { "tablecode", "Need the same table in a database or in Python? Table to SQL / Python writes the code with the right column types." } },
             { "backup", new[] { "snap", "Backups keep the file; Take Snapshot and What Changed? show exactly which cells changed since." } }
         };
 

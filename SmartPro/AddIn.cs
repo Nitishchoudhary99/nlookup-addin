@@ -17,6 +17,8 @@ namespace SmartPro
                 ExcelAsyncUtil.QueueAsMacro(delegate
                 {
                     try { Xl.App.OnKey("^+q", "SmartProQuickFind"); } catch { }
+                    try { Xl.App.OnKey("^+j", "SmartProNavigator"); } catch { }
+                    try { FocusCell.Restore(); } catch { }
                     // a returning user sees the streak and the time saved on the status bar (nothing to click away)
                     try
                     {
@@ -31,6 +33,7 @@ namespace SmartPro
 
         public void AutoClose()
         {
+            try { FocusCell.Stop(); } catch { }
             try { IntelliSenseServer.Uninstall(); } catch { }
         }
     }
@@ -57,6 +60,12 @@ namespace SmartPro
         {
             Runner.Run("find");
         }
+
+        [ExcelCommand(Name = "SmartProNavigator")]
+        public static void Navigator()
+        {
+            Runner.Run("navigator");
+        }
     }
 
     internal static class Runner
@@ -77,7 +86,7 @@ namespace SmartPro
             else if (id != "assist" && id != "find" && id != "about" && id != "licence" && id != "funcs" && id != "impact") lastTool = id;
             try
             {
-                bool needsBook = !(id == "about" || id == "openbackups" || id == "find" || id == "combfolder" || id == "funcs" || id == "licence" || id == "assist" || id == "repeat" || id == "impact");
+                bool needsBook = !(id == "about" || id == "openbackups" || id == "find" || id == "combfolder" || id == "fileorg" || id == "focus" || id == "funcs" || id == "licence" || id == "assist" || id == "repeat" || id == "impact");
                 object book = Xl.App.ActiveWorkbook;
                 if (needsBook && book == null)
                 {
@@ -156,7 +165,18 @@ namespace SmartPro
                     case "splitfiles": BookTools.SplitByColumn(true); break;
                     case "combsheets": BookTools.CombineSheets(); break;
                     case "combfolder": BookTools.CombineFolder(); break;
-                    case "index": BookTools.SheetIndex(); break;
+                    case "index": NavTools.WorkbookIndex(); break;
+                    case "navigator": NavTools.Navigator(); break;
+                    case "focus": FocusCell.Toggle(); break;
+                    case "sheetmgr": NavTools.SheetManager(); break;
+                    case "swap": NavTools.SwapRanges(); break;
+                    case "formulas": FormulaLibrary.Run(); break;
+                    case "aiformula": AiFormula.Run(); break;
+                    case "validation": ValidationTools.Run(); break;
+                    case "fileorg": FileTools.Run(); break;
+                    case "splitpdfs": BookTools.SplitByColumn(2); break;
+                    case "webtable": ExportMore.WebTable(); break;
+                    case "tablecode": ExportMore.TableToCode(); break;
                     case "pdfs": BookTools.SheetsToPdf(); break;
                     case "inrfmt": BookTools.IndianFormat(); break;
                     case "fycol": BookTools.AddFiscalYear(); break;
@@ -219,7 +239,7 @@ namespace SmartPro
                     "Pro: Smart Analyst, Why It Changed, Forecast, Ask Your Data, fuzzy merge, reconcile, sum finder, duplicate payments, " +
                     "mail to each party, formula risk scan, snapshots, compare, ABC and ageing reports.\n\n" +
                     "Saved so far: about " + Habit.Hours(Habit.MinutesSaved) + " (My Impact)\n" +
-                    "Find any tool:  Ctrl + Shift + Q\n" +
+                    "Find any tool:  Ctrl + Shift + Q      Jump to any sheet:  Ctrl + Shift + J\n" +
                     "Not sure which tool to use?  Open the Assistant (first button on the " + Design.TabLabel + " tab)");
         }
     }

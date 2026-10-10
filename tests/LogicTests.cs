@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Globalization;
 using ExcelDna.Integration;
@@ -84,6 +85,44 @@ class T {
     Console.WriteLine("perday: " + Prop("ProPlan","PerDay") + " | " + Prop("ProPlan","SavingLine"));
     Eq(Call("Habit","Hours",95.0), "1.6 hours", "hours fmt");
     Console.WriteLine("rupees 120min: " + Call("Habit","Rupees",120.0));
+
+    // ---- 3.3: ribbon, tips table, AI parsing, exports, formula recipes ----
+    string xml = (string)Call("Design","RibbonXml");
+    var doc = new System.Xml.XmlDocument(); doc.LoadXml(xml);
+    Eq(doc.GetElementsByTagName("button").Count, ((Array)A.GetType("SmartPro.Design").GetField("Tools", BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic).GetValue(null)).Length, "ribbon XML is valid and has every tool");
+    Eq(Prop("Nudge","TipsOff") is bool, true, "tips table loads (no duplicate keys)");
+    string[] p1 = (string[])Call("AiFormula","Parse","FORMULA: =SUMIFS($C$2:$C$500,$A$2:$A$500,A2)\nWHY: Adds the amount of this customer.");
+    Eq(p1[0], "=SUMIFS($C$2:$C$500,$A$2:$A$500,A2)", "AI reply: formula");
+    Eq(p1[1], "Adds the amount of this customer.", "AI reply: explanation");
+    string[] p2 = (string[])Call("AiFormula","Parse","FORMULA: `=TODAY()-B2`\nWHY: Days since\nthe date.");
+    Eq(p2[0] + "|" + p2[1], "=TODAY()-B2|Days since the date.", "AI reply: backticks and two-line why");
+    string[] p3 = (string[])Call("AiFormula","Parse","FORMULA: none\nWHY: Needs a macro.");
+    Eq(p3[0], null, "AI reply: none means no formula");
+    Eq(Call("ExportMore","Ident","Sales Data 2026!"), "sales_data_2026", "SQL identifier");
+    Eq(Call("ExportMore","Ident","2026 sales"), "t_2026_sales", "SQL identifier starting with a digit");
+    object[,] t = (object[,])Array.CreateInstance(typeof(object), new[]{4,4}, new[]{1,1});
+    t[1,1]="Party"; t[1,2]="Amount"; t[1,3]="Date"; t[1,4]="Qty";
+    t[2,1]="O'Neil Traders"; t[2,2]=1250.5; t[2,3]=new DateTime(2026,4,1); t[2,4]=3.0;
+    t[3,1]=null; t[3,2]=null; t[3,3]=null; t[3,4]=null;
+    t[4,1]="ABC"; t[4,2]=99.0; t[4,3]=new DateTime(2026,5,2); t[4,4]=7.0;
+    string[] h = { "", "Party", "Amount", "Date", "Qty" };
+    string[] ty = { "", "text", "dec", "date", "int" };
+    int[] ml = { 0, 14, 0, 0, 0 };
+    string sql = (string)Call("ExportMore","Sql", t, h, ty, ml, "sales", 2);
+    Eq(sql.Contains("\"Amount\" DECIMAL(18,4)") && sql.Contains("'O''Neil Traders', 1250.5, '2026-04-01 00:00:00', 3)") && !sql.Contains("NULL, NULL"), true, "SQL: types, quotes escaped, blank row skipped");
+    Console.WriteLine(sql);
+    string py = (string)Call("ExportMore","Python", t, h, ty, "sales");
+    Eq(py.Contains("\"Party\": [\"O'Neil Traders\", \"ABC\"]") && py.Contains("astype(\"Int64\")"), true, "Python: lists without the blank row");
+    var recipes = (Array)A.GetType("SmartPro.FormulaLibrary").GetField("All", BindingFlags.Static|BindingFlags.NonPublic).GetValue(null);
+    int badRecipes = 0;
+    foreach (object r in recipes) {
+      string tpl = (string)r.GetType().GetField("Template").GetValue(r);
+      int depth = 0; foreach (char ch in tpl) { if (ch=='(') depth++; if (ch==')') depth--; }
+      bool kinds = System.Text.RegularExpressions.Regex.Matches(tpl, @"\{([^:}]+):").Cast<System.Text.RegularExpressions.Match>().All(m => "craN".Contains(m.Groups[1].Value) || m.Groups[1].Value=="n");
+      if (!tpl.StartsWith("=") || !kinds) { badRecipes++; Console.WriteLine("bad recipe: " + tpl); }
+    }
+    Eq(badRecipes, 0, "formula recipes: start with = and use known placeholders");
+    Eq(recipes.Length, 41, "41 formula recipes");
     Console.WriteLine(fails == 0 ? "ALL PASSED" : fails + " FAILED");
     Environment.Exit(fails == 0 ? 0 : 1);
   }

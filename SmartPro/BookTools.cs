@@ -49,9 +49,13 @@ namespace SmartPro
             catch { }
         }
 
-        public static void SplitByColumn(bool toFiles)
+        public static void SplitByColumn(bool toFiles) { SplitByColumn(toFiles ? 1 : 0); }
+
+        // mode 0 = one sheet per value, 1 = one workbook per value, 2 = one PDF per value
+        public static void SplitByColumn(int mode)
         {
-            string title = toFiles ? "Split to Files" : "Split to Sheets";
+            bool toFiles = mode >= 1, toPdf = mode == 2;
+            string title = toPdf ? "Split to PDFs" : toFiles ? "Split to Files" : "Split to Sheets";
             dynamic src = Xl.PickRange(title);
             if (src == null) return;
             object[,] v = Xl.ReadTyped(src);
@@ -80,11 +84,11 @@ namespace SmartPro
                 }
                 lst.Add(r);
             }
-            if (order.Count > 60 && !Ui.Ok("This will create " + order.Count + (toFiles ? " files" : " sheets") + ". Continue?")) return;
+            if (order.Count > 60 && !Ui.Ok("This will create " + order.Count + (toPdf ? " PDF files" : toFiles ? " files" : " sheets") + ". Continue?")) return;
             string folder = null;
             if (toFiles)
             {
-                folder = Ui.PickFolder("Choose the folder for the split files");
+                folder = Ui.PickFolder(toPdf ? "Choose the folder for the PDF files" : "Choose the folder for the split files");
                 if (folder == null) return;
             }
             dynamic wb = src.Worksheet.Parent;
@@ -111,7 +115,25 @@ namespace SmartPro
                     else ws = Xl.AddSheet(wb, g);
                     Xl.WriteTable(ws.Range["A1"], o, 1);
                     CopyLook(src, ws.Range["A1"].Resize[rows.Count + 1, nc]);
-                    if (toFiles)
+                    if (toPdf)
+                    {
+                        try
+                        {
+                            ws.Range["A1"].Resize[rows.Count + 1, nc].Columns.AutoFit();
+                            dynamic ps = ws.PageSetup;
+                            ps.Orientation = nc > 6 ? C.xlLandscape : 1;
+                            ps.Zoom = false;
+                            ps.FitToPagesWide = 1;
+                            ps.FitToPagesTall = false;
+                            ps.PrintTitleRows = "$1:$1";
+                            ps.CenterFooter = "Page &P of &N";
+                            ps.LeftHeader = heads[kc] + ": " + g;
+                        }
+                        catch { }
+                        ws.ExportAsFixedFormat(C.xlTypePDF, Path.Combine(folder, Xl.SafeFileName(g) + ".pdf"));
+                        nb.Close(false);
+                    }
+                    else if (toFiles)
                     {
                         nb.SaveAs(Path.Combine(folder, Xl.SafeFileName(g) + ".xlsx"), C.xlOpenXMLWorkbook);
                         nb.Close(false);
@@ -119,7 +141,8 @@ namespace SmartPro
                 }
                 if (!toFiles) src.Worksheet.Activate();
             }
-            if (toFiles) Ui.Info(order.Count + " files saved in:\n" + folder);
+            if (toPdf) Ui.Info(order.Count + " PDF files saved in:\n" + folder + "\n\nEach one has only the rows of its '" + heads[kc] + "', with the header repeated on every page.");
+            else if (toFiles) Ui.Info(order.Count + " files saved in:\n" + folder);
             else Ui.Info(order.Count + " sheets created, one for each value of '" + heads[kc] + "'.");
         }
 

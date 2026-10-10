@@ -1,7 +1,46 @@
-# DocBrisk (C# / Excel-DNA)   version 3.2
+# DocBrisk (C# / Excel-DNA)   version 3.3
 
-A compiled Excel add-in (.xll): 79 tools and 32 worksheet functions.
+A compiled Excel add-in (.xll): 90 tools and 32 worksheet functions.
 It is built the same way as the NLOOKUP project (Excel-DNA, .NET Framework 4.8, C# 7.3).
+
+## What is new in 3.3: everything XLBooster has, done better
+
+The comparison is in `../docs/COMPETITOR-XLBOOSTER.md`. New ribbon groups **Navigate** and **Formulas** sit right after
+the DocBrisk group, because they are used every day.
+
+| New | Plan | What it does |
+|---|---|---|
+| Sheet Navigator | Free | Ctrl+Shift+J: type a few letters, jump to any sheet of any open workbook (hidden ones too); "Back" returns to the last sheet. |
+| Workbook Index | Free | Replaces Sheet Index. Rebuilt in place, lists hidden sheets, sizes, last cell, charts, tab colour; optional "Index" button on every sheet. |
+| Focus Cell | Free | A soft cross over the active row and column. A see-through, click-through window over the grid: nothing is written to the file, Undo keeps working. On / off, remembered. |
+| Sheet Manager | Free | Show, hide, very hide, rename (prefix / suffix / replace), tab colour, move, sort, delete (with backup) many sheets at once. |
+| Smart Validation | Free | Dropdowns (typed, or the sorted different values of a column), no repeats, number / date ranges, not-in-future dates, mobile, PIN, PAN, GSTIN, IFSC, Aadhaar, email, text length. Plain Excel validation. |
+| Formula Library | Free | 41 recipes; it asks for the cells and writes the formula, then offers to fill down. |
+| AI Formula | Pro | Your own words -> a formula for the active cell, with a short explanation, from Claude (`claude-opus-5-5`, low effort, with a server-side fallback model if a request is declined). Sends the request and the column headers; 3 sample rows only if ticked; the window shows what is sent. Uses the user's own Anthropic API key, kept encrypted with Windows DPAPI. |
+| Swap Ranges | Free | Swaps two blocks of the same size, formulas included. |
+| Split to PDFs | Pro | One PDF per value of a column, header on every page, fit to width. |
+| File Organizer | Pro | List a folder's files in a sheet, rename them from the sheet, or sort them into sub-folders by type / month / first word. Every change is logged to `_DocBrisk_file_log.csv`. |
+| Web Table | Free | A table as one HTML page: search, sort, filters per column (`>1000` works on numbers), totals of the rows shown, CSV, print, dark mode, phone friendly. |
+| Table to SQL / Python | Pro | CREATE TABLE + INSERT (SQL Server, MySQL, PostgreSQL, SQLite) or a pandas DataFrame, with column types. |
+
+### Build notes for 3.3
+
+- `LangVersion` is now `latest` (needed by the Anthropic SDK). The target is still .NET Framework 4.8.
+- `SmartPro.csproj` references the `Anthropic` NuGet package (12.55.0) and `System.Security` (DPAPI), and lists the
+  SDK and its dependencies in `ExcelAddInInclude` so they are packed into the `.xll`. **Check once on Windows** that the
+  packed `-packed.xll` loads and that AI Formula answers; if Excel-DNA cannot load a packed dependency, ship the DLLs
+  next to the `.xll` instead (the installer can copy them).
+- AI Formula needs the internet and the user's own key. For "AI without a key" put a proxy on docbrisk.com
+  (see the comparison document, section 4).
+
+### Status of version 3.3
+
+- Compiles with warnings as errors; logic tests pass under Mono (ribbon XML valid with all 90 buttons, tips table,
+  AI reply parsing, SQL / Python export, formula recipes).
+- The Web Table page was run in Chromium (search, filters, sort, totals, theme, phone width, no script errors).
+- **Not run in Excel:** Navigator, Index, Focus Cell (overlay position at different zoom levels and frozen panes),
+  Sheet Manager, Validation (especially the PAN / GSTIN formulas), Formula Library, File Organizer, Split to PDFs,
+  and AI Formula against the live API (no API key was available here). Test these on Windows before publishing.
 
 ## What is new in 3.2: a reason to come back every day
 
@@ -153,6 +192,13 @@ chart as CSV, and print or save as PDF. It also works on a phone. The file carri
 | `Nudge.cs` | the tip cards after a tool and their limits |
 | `ImpactWindow.cs` | the My Impact window |
 | `SmartLookup.cs` | Smart Lookup and the SMARTLOOKUP function |
+| `NavTools.cs` | Sheet Navigator, Workbook Index, Sheet Manager, Swap Ranges |
+| `FocusCell.cs` | the Focus Cell overlay |
+| `ValidationTools.cs` | Smart Validation |
+| `FormulaLibrary.cs` | the 41 formula recipes |
+| `AiFormula.cs` | AI Formula (Claude) |
+| `FileTools.cs` | File Organizer |
+| `ExportMore.cs` | Web Table, Table to SQL / Python |
 | `ProPlan.cs` | the prices and the words of the Pro offer |
 | `SmartTools.cs` | Explain Formula, Smart Analyst, Duplicate Payments, Mail to Each Party |
 | `Settings.cs` | saved choices such as the look of the last dashboard |

@@ -6,5 +6,5 @@ cd "$(dirname "$0")"
 dotnet build CompileCheck.csproj -nologo -v q
 OUT=bin/Debug/net48
 cp ~/.nuget/packages/exceldna.integration/1.8.0/lib/net452/ExcelDna.Integration.dll "$OUT/"
-mcs -nologo -r:"$OUT/ExcelDna.Integration.dll" -r:System.Windows.Forms.dll LogicTests.cs -out:"$OUT/LogicTests.exe"
+mcs -nologo -r:"$OUT/ExcelDna.Integration.dll" -r:System.Windows.Forms.dll -r:System.Xml.dll -r:System.Core.dll LogicTests.cs -out:"$OUT/LogicTests.exe"
 cd "$OUT" && mono LogicTests.exe
