@@ -17,6 +17,13 @@ namespace SmartPro
                 ExcelAsyncUtil.QueueAsMacro(delegate
                 {
                     try { Xl.App.OnKey("^+q", "SmartProQuickFind"); } catch { }
+                    // a returning user sees the streak and the time saved on the status bar (nothing to click away)
+                    try
+                    {
+                        string hello = Habit.Greeting();
+                        if (hello != null) Xl.Status(hello);
+                    }
+                    catch { }
                 });
             }
             catch { }
@@ -67,10 +74,10 @@ namespace SmartPro
                 }
                 id = lastTool;
             }
-            else if (id != "assist" && id != "find" && id != "about" && id != "licence" && id != "funcs") lastTool = id;
+            else if (id != "assist" && id != "find" && id != "about" && id != "licence" && id != "funcs" && id != "impact") lastTool = id;
             try
             {
-                bool needsBook = !(id == "about" || id == "openbackups" || id == "find" || id == "combfolder" || id == "funcs" || id == "licence" || id == "assist" || id == "repeat");
+                bool needsBook = !(id == "about" || id == "openbackups" || id == "find" || id == "combfolder" || id == "funcs" || id == "licence" || id == "assist" || id == "repeat" || id == "impact");
                 object book = Xl.App.ActiveWorkbook;
                 if (needsBook && book == null)
                 {
@@ -79,11 +86,13 @@ namespace SmartPro
                 }
                 // Pro tools: a valid Pro key, or one of the free trial runs
                 if (Design.IsPro(id) && !Licence.AllowPro(id, Design.CaptionOf(id))) return;
-                if (id != "licence" && id != "about" && id != "find" && id != "assist") Settings.Set("Runs", (Settings.GetInt("Runs", 0) + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                if (Habit.IsWork(id)) Settings.Set("Runs", (Settings.GetInt("Runs", 0) + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
                 switch (id)
                 {
                     case "assist": Assistant.Show(); break;
                     case "explain": SmartTools.ExplainFormula(); break;
+                    case "smartlookup": SmartLookup.Run(); break;
+                    case "impact": ImpactWindow.Show(); break;
                     case "analyst": SmartTools.SmartAnalyst(); break;
                     case "duppay": SmartTools.DuplicatePayments(); break;
                     case "mailparty": SmartTools.MailToEachParty(); break;
@@ -163,6 +172,10 @@ namespace SmartPro
                 // after a free trial run of a Pro tool: how many are left, on the status bar (nothing to click away)
                 string trial = Licence.TakeNote();
                 if (trial != null) Xl.Status(trial);
+                // the time saved, the streak and the milestones; then at most one small card in the corner (Nudge.cs)
+                System.Collections.Generic.List<Habit.Milestone> reached = null;
+                try { reached = Habit.Record(id); } catch { }
+                Nudge.AfterRun(id, reached);
             }
             catch (Exception ex)
             {
@@ -201,10 +214,11 @@ namespace SmartPro
         {
             Ui.Info(Design.AppName + " for Excel  version " + Design.Version + "\nby " + Design.Author + "\ndocbrisk.com\n\n" +
                     Licence.PlanText() + "\n" + ProPlan.Short + "\n\n" +
-                    "Free: dashboards you design yourself and edit later, web dashboards, Explain Formula, report cleaning, data health, " +
+                    "Free: Smart Lookup, dashboards you design yourself and edit later, web dashboards, Explain Formula, report cleaning, data health, " +
                     "everyday tools, split / combine and an India pack.\n" +
                     "Pro: Smart Analyst, Why It Changed, Forecast, Ask Your Data, fuzzy merge, reconcile, sum finder, duplicate payments, " +
                     "mail to each party, formula risk scan, snapshots, compare, ABC and ageing reports.\n\n" +
+                    "Saved so far: about " + Habit.Hours(Habit.MinutesSaved) + " (My Impact)\n" +
                     "Find any tool:  Ctrl + Shift + Q\n" +
                     "Not sure which tool to use?  Open the Assistant (first button on the " + Design.TabLabel + " tab)");
         }

@@ -11,6 +11,15 @@ namespace SmartPro
         public const int MonthRupees = 99;       // Pro for 1 month   (Worker: PRO_PLANS.month =  9900 paise)
         public const string Rupee = "₹";
 
+        // PRO WEEK: every Pro tool is open for this many days from the first day DocBrisk is used on a PC,
+        // without using the free runs. People who have used a tool for a week miss it when it locks.
+        // 0 switches the Pro Week off (then only the free runs per tool remain).
+        public static readonly int WelcomeProDays = 7;
+
+        // What one hour of office time is worth, for the line "your time saved is worth about ..." in the
+        // DocBrisk Pro and My Impact windows. Shown as an estimate; 0 hides the line.
+        public static readonly int HourValueRupees = 400;
+
         // Up to five short lines. Write only what is true for your offer; change a line when the offer changes.
         public static readonly string[] Promise =
         {
@@ -32,7 +41,17 @@ namespace SmartPro
             {
                 int save = MonthRupees * 12 - YearRupees;
                 if (save <= 0) return "";
-                return "Saves " + Rupee + save + " a year  (about " + Rupee + ((YearRupees + 6) / 12) + " a month)";
+                return "Saves " + Rupee + save + " a year  (" + PerDay + ")";
+            }
+        }
+
+        // the yearly price per day, rounded up to 10 paise: "₹2.8 a day"
+        public static string PerDay
+        {
+            get
+            {
+                double d = System.Math.Ceiling(YearRupees / 365.0 * 10) / 10;
+                return Rupee + d.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " a day";
             }
         }
 

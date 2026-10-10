@@ -13,7 +13,7 @@ namespace SmartPro
     {
         public const string AppName = "DocBrisk";          // shown in every message box
         public const string TabLabel = "DocBrisk";         // ribbon tab
-        public const string Version = "3.1";
+        public const string Version = "3.2";
         public const string Author = "Nitish Choudhary";     // shown on the ribbon and in About
         public const string FunctionCategory = "DocBrisk"; // category in Insert Function
 
@@ -51,7 +51,9 @@ namespace SmartPro
         public static readonly ToolDef[] Tools =
         {
             new ToolDef("assist", "Assistant", "DocBrisk", "FunctionWizard", true, "Looks at the table you are in and suggests what to do next, in plain words. Also lists and searches every tool.", "assistant suggest recommend help start what next guide"),
+            new ToolDef("smartlookup", "Smart Lookup", "DocBrisk", "FunctionWizard", true, "VLOOKUP without the #N/A: brings columns from another table even when the keys differ by spaces, capitals or numbers stored as text. Every row says how it was matched; keys found twice are counted.", "lookup vlookup xlookup index match bring column join merge na n/a not found master map fetch nlookup"),
             new ToolDef("explain", "Explain Formula", "DocBrisk", "FormulaEvaluate", true, "Explains the formula in the active cell in plain words, step by step, with the value of every part right now, where an error starts and what to watch out for.", "explain formula understand meaning what does step evaluate why error help smart ai"),
+            new ToolDef("impact", "My Impact", "DocBrisk", "AcceptInvitation", true, "The time DocBrisk has saved you, your streak of working days and your milestones. Every milestone adds bonus runs for the Pro tools.", "impact time saved hours streak milestones progress stats statistics bonus reward"),
             new ToolDef("licence", "DocBrisk Pro", "DocBrisk", "Lock", true, "Your plan and expiry, what Pro adds and the free runs left for every Pro tool. Paste your key here, or get Pro on docbrisk.com: a key you copy there is picked up by itself.", "licence license key pro activate subscription renew buy plan price upgrade"),
             new ToolDef("dash", "One-Click Dashboard", "Dashboards (Free)", "ChartInsert", true, "KPI cards, charts, filter buttons and written insights from any table, in one click. Change anything afterwards with Edit Dashboard.", "dashboard kpi chart pivot slicer report mis"),
             new ToolDef("custom", "Dashboard Studio", "Dashboards (Free)", "ChartInsert", true, "Design your own dashboard with a live preview: up to 8 KPI cards and 10 charts of 12 kinds, 6 filters, 26 colour themes or your own colours, 6 card looks, 8 layouts and your logo. Start from 78 ready designs; save a design and use it again.", "studio custom manual dashboard design suggest layout style kpi builder theme logo template colours"),

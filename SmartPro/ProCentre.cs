@@ -146,7 +146,13 @@ namespace SmartPro
             Controls.Add(act);
             msg.SetBounds(S(18), S(y1 + 60), S(844), S(40));
             Controls.Add(msg);
-            Lbl(this, Design.AppName + " tools run on this PC so far: " + Settings.GetInt("Runs", 0).ToString("#,##0", CultureInfo.InvariantCulture), 18, y1 + 112, 600, 20, 8.5f, false, Slate);
+            // the user's own numbers: the strongest reason to pay is the time already saved
+            double saved = Habit.MinutesSaved;
+            string impact = Design.AppName + " tools run on this PC so far: " + Settings.GetInt("Runs", 0).ToString("#,##0", CultureInfo.InvariantCulture);
+            if (saved >= 30) impact = "DocBrisk has saved you about " + Habit.Hours(saved) + (ProPlan.HourValueRupees > 0 && saved >= 60 ? " (worth about " + Habit.Rupees(saved) + ")" : "") +
+                                      " in " + Settings.GetInt("Runs", 0).ToString("#,##0", CultureInfo.InvariantCulture) + " runs.   Pro: " + ProPlan.PerDay + ".";
+            if (Habit.Bonus > 0 && !Licence.IsProNow()) impact += "   Bonus runs: " + Habit.Bonus + ".";
+            Lbl(this, impact, 18, y1 + 112, 740, 20, 8.5f, Habit.MinutesSaved >= 30, Slate);
             Button close = new Button();
             close.Text = "Close";
             close.SetBounds(S(776), S(y1 + 106), S(86), S(30));
@@ -199,10 +205,10 @@ namespace SmartPro
             {
                 if (!Design.IsPro(t.Id)) continue;
                 int left = Licence.TrialLeft(t.Id);
-                string state = pro ? "Unlocked" : (left > 0 ? left + (left == 1 ? " free run left" : " free runs left") : "Free runs used");
+                string state = pro ? "Unlocked" : Habit.WelcomeDay > 0 ? "Open (Pro Week)" : (left > 0 ? left + (left == 1 ? " free run left" : " free runs left") : "Free runs used");
                 ListViewItem it = new ListViewItem(new[] { t.Caption, t.Tip, state });
                 it.ToolTipText = t.Tip;
-                if (!pro && left == 0) it.ForeColor = Red;
+                if (!pro && left == 0 && Habit.WelcomeDay == 0) it.ForeColor = Red;
                 list.Items.Add(it);
             }
             list.EndUpdate();

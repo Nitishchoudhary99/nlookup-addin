@@ -1,7 +1,39 @@
-# DocBrisk (C# / Excel-DNA)   version 3.1
+# DocBrisk (C# / Excel-DNA)   version 3.2
 
-A compiled Excel add-in (.xll): 77 tools and 31 worksheet functions.
+A compiled Excel add-in (.xll): 79 tools and 32 worksheet functions.
 It is built the same way as the NLOOKUP project (Excel-DNA, .NET Framework 4.8, C# 7.3).
+
+## What is new in 3.2: a reason to come back every day
+
+Why users did not stay is written up in `../docs/PAIN-POINTS-AND-GROWTH.md`. In short: many tools, but nothing that
+shows the value the user gets, no daily hook, and Pro was only mentioned at the moment a tool locked. 3.2 adds:
+
+| New | Plan | What it does |
+|---|---|---|
+| Smart Lookup | Free | VLOOKUP without the #N/A. Brings columns from a second table even when keys differ by spaces, non-breaking spaces, capitals, a leading apostrophe or numbers stored as text. A Match column says how each row was found; the summary says how many rows VLOOKUP would have missed, and how many keys appear twice. When keys are not found it estimates how many Fuzzy Merge (Pro) could match. |
+| `=SMARTLOOKUP(value, lookup_range, return_range, [if_not_found], [fuzzy])` | Free | The same in a formula. `fuzzy` TRUE takes the closest name (90% alike or more) when nothing matches exactly. |
+| My Impact | Free | Time saved (an estimate per tool, at most 3 runs of a tool counted a day), the streak of working days, the tools used most, milestones, and the Pro tools that fit the user's own work. |
+| Milestones and bonus runs | Free | 10 milestones (10 runs, 1 hour saved, a 5-day streak ...). Each gives bonus runs that work on any Pro tool after its own 3 free runs are used. |
+| Pro Week | - | For the first 7 days on a PC every Pro tool is open, without a key and without using the free runs (a "reverse trial"). Cards on day 1, the day before the end and after the end show what the user did with Pro. Existing users get their Pro Week when they first use 3.2. `ProPlan.WelcomeProDays` = 0 switches it off. |
+| Tips after a tool | - | A small card in the corner of the screen (it does not take the focus and closes by itself) shows the Pro tool that takes the job one step further, for example Clean -> Smart Analyst, Compare Two Lists -> Reconcile. At most 2 a day, 3 tool runs apart, the same tip 3 times ever; "No tips" turns them off. On the last free runs of a Pro tool it says what Pro members get. Pro members see, at most once a week, what Pro has saved them. |
+| Status bar greeting | - | When Excel starts: the streak, the time saved, the Pro Week day or the bonus runs waiting. |
+| DocBrisk Pro window | - | Shows the user's own time saved and what it is worth, the price per day, "Open (Pro Week)" during the Pro Week, and the bonus runs. |
+
+The settings for the offer are in `ProPlan.cs`: `WelcomeProDays` (7), `HourValueRupees` (400: what one hour of office
+time is worth, for "your time saved is worth about ..."; 0 hides those lines). The minutes per tool are in `Habit.cs`
+(`Minutes`); the tips (which free tool leads to which Pro tool) are in `Nudge.cs` (`Next`), with their limits at the top.
+
+New files: `Habit.cs`, `Nudge.cs`, `ImpactWindow.cs`, `SmartLookup.cs`. Everything is kept in the registry under
+`HKCU\Software\DocBrisk\SmartPro`; nothing is sent anywhere.
+
+### Status of version 3.2
+
+- The whole add-in now **compiles** (on Linux with the .NET 8 SDK and the .NET Framework 4.8 reference assemblies:
+  `tests/CompileCheck.csproj`, warnings are errors) and GitHub Actions builds it on every push.
+- The logic of 3.2 (lookup keys, `SMARTLOOKUP`, time saved, streaks, milestones, bonus runs, Pro Week, the licence
+  gate) is **run** by `tests/LogicTests.cs` under Mono: `tests/run-tests.sh`.
+- The windows (My Impact, the tip card) and Smart Lookup writing to a sheet have **not been run in Excel** yet.
+  Check them once on Windows at 100% and 150% screen scaling before publishing.
 
 ## What is new in 3.1
 
@@ -117,6 +149,10 @@ chart as CSV, and print or save as PDF. It also works on a phone. The file carri
 | `LicenceKeys.cs` | your public key and buy link; keep your own copy when you update |
 | `Licence.cs` | checks a key offline, free trial runs, the key on the clipboard |
 | `ProCentre.cs` | the DocBrisk Pro window |
+| `Habit.cs` | time saved, streak, milestones, bonus runs, Pro Week |
+| `Nudge.cs` | the tip cards after a tool and their limits |
+| `ImpactWindow.cs` | the My Impact window |
+| `SmartLookup.cs` | Smart Lookup and the SMARTLOOKUP function |
 | `ProPlan.cs` | the prices and the words of the Pro offer |
 | `SmartTools.cs` | Explain Formula, Smart Analyst, Duplicate Payments, Mail to Each Party |
 | `Settings.cs` | saved choices such as the look of the last dashboard |

@@ -36,6 +36,11 @@ namespace SmartPro
         static bool warned;
         static string note;                                       // one line for the status bar after a free trial run
 
+        // how the last Pro tool was let in (for the pop-up after it, in Nudge.cs)
+        internal enum TrialKind { None, ProWeek, FreeRun, Bonus }
+        internal static TrialKind LastTrial = TrialKind.None;
+        internal static int LastLeft;                             // free runs (or bonus runs) left after that run
+
         static byte[] B64(string s)
         {
             s = s.Trim().Replace('-', '+').Replace('_', '/');
@@ -179,6 +184,8 @@ namespace SmartPro
                 if (li.Never) return "Pro plan   |   licensed to " + li.Name + "   |   no expiry";
                 return "Pro plan   |   licensed to " + li.Name + "   |   valid until " + li.Expires.ToString("dd-MMM-yyyy", Inv) + "  (" + DaysLeft(li) + " days left)";
             }
+            int wd = Habit.WelcomeDay;
+            if (wd > 0) return "Pro Week   |   day " + wd + " of " + ProPlan.WelcomeProDays + ": every Pro tool is open   |   then " + FreeRuns + " free runs each";
             if (li.Valid) return "Free plan   |   licensed to " + li.Name + "   |   Pro tools: " + FreeRuns + " free runs each";
             if (!string.IsNullOrEmpty(li.Reason) && !string.IsNullOrEmpty(ReadReg("Key"))) return "Free plan   |   " + li.Reason;
             return "Free plan   |   every dashboard and everyday tool is free   |   Pro tools: " + FreeRuns + " free runs each";
@@ -277,6 +284,7 @@ namespace SmartPro
             LicenceInfo li = Current();
             if (li.Valid && li.Pro)
             {
+                LastTrial = TrialKind.None;
                 if (!warned && !li.Never)
                 {
                     int left = DaysLeft(li);
@@ -289,13 +297,38 @@ namespace SmartPro
                 }
                 return true;
             }
+            LastTrial = TrialKind.None;
+            LastLeft = 0;
+            // the Pro Week: every Pro tool is open for the first days, without using the free runs
+            if (Settings.Get("H_First") == null) Settings.Set("H_First", DateTime.Now.ToString("yyyy-MM-dd", Inv));
+            int wd = Habit.WelcomeDay;
+            if (wd > 0)
+            {
+                LastTrial = TrialKind.ProWeek;
+                int daysLeft = ProPlan.WelcomeProDays - wd;
+                note = "Pro Week, day " + wd + " of " + ProPlan.WelcomeProDays + ": '" + caption + "' and every other Pro tool are open " +
+                       (daysLeft == 0 ? "until tonight" : "for " + daysLeft + (daysLeft == 1 ? " more day" : " more days")) + ".   Keep Pro for " + ProPlan.PerDay + "   (button: DocBrisk Pro)";
+                return true;
+            }
             int used = TrialUsed(id);
             if (used < FreeRuns)
             {
                 WriteReg("Trial_" + id, (used + 1).ToString(Inv));
                 int more = FreeRuns - used - 1;
+                LastTrial = TrialKind.FreeRun;
+                LastLeft = more;
                 note = "'" + caption + "' is a Pro tool: " + (more > 0 ? more + (more == 1 ? " free run" : " free runs") + " left on this PC" : "that was its last free run on this PC") +
                        ".   " + ProPlan.Short + "   (button: DocBrisk Pro)";
+                return true;
+            }
+            // bonus runs earned with milestones (My Impact) work for any Pro tool
+            if (Habit.TakeBonus())
+            {
+                int b = Habit.Bonus;
+                LastTrial = TrialKind.Bonus;
+                LastLeft = b;
+                note = "'" + caption + "' ran on a bonus run you earned.  " + (b > 0 ? b + (b == 1 ? " bonus run" : " bonus runs") + " left." : "That was your last bonus run.") +
+                       "   With Pro it is unlimited: " + ProPlan.PerDay;
                 return true;
             }
             string why = "'" + caption + "' is a Pro tool and its " + FreeRuns + " free runs on this PC are used.";

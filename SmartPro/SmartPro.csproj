@@ -6,7 +6,7 @@
     <AssemblyName>SmartPro</AssemblyName>
     <RootNamespace>SmartPro</RootNamespace>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Version>3.1.0</Version>
+    <Version>3.2.0</Version>
     <!-- Excel-DNA build settings -->
     <ExcelAddInName>Smart Pro</ExcelAddInName>
     <ExcelAddInExplicitExports>true</ExcelAddInExplicitExports>

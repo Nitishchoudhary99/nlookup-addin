@@ -18,7 +18,7 @@
 
 #define AppName "DocBrisk for Excel"
 ; EDIT: raise this number for every new build you publish
-#define AppVer "3.1.0"
+#define AppVer "3.2.0"
 #define Publisher "Nitish Choudhary (DocBrisk)"
 #define Site "https://docbrisk.com/addins"
 
