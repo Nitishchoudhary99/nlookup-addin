@@ -8,7 +8,17 @@ The sound track is silent: add music inside the YouTube / Instagram app.
 
 ## Voice
 
-`voiceover.json` holds the Hindi voiceover, one line per scene with its start second.
-`python make_voice.py` adds it with a Piper neural Hindi voice (male `hi_IN-pratham-medium`, or
-`--voice hi_IN-priyamvada-medium` for the female one) and writes `DocBrisk-Excel-promo.mp4`.
-The voice model is downloaded once from huggingface.co. `DocBrisk-Excel-promo-silent.mp4` is the newest video without sound.
+- `DocBrisk-Excel-promo.mp4`: Hindi voiceover, male voice (Kokoro `hm_omega`)
+- `DocBrisk-Excel-promo-female.mp4`: the same with the female voice (Kokoro `hf_alpha`)
+- `DocBrisk-Excel-promo-silent.mp4`: no sound
+
+`voiceover.json` holds the lines, one per scene with its start second (English words written in Devanagari so the
+Hindi voice says them the Indian way). To change a line and make the video again:
+
+```bash
+pip install kokoro-onnx soundfile
+python make_voice.py                                   # male voice -> DocBrisk-Excel-promo.mp4
+python make_voice.py --voice hf_alpha --out DocBrisk-Excel-promo-female.mp4
+```
+The Kokoro model (about 350 MB) is downloaded once from GitHub into `voices/`. The sound is normalised to -14 LUFS,
+the loudness YouTube and Instagram use. Add music in the YouTube / Instagram app if you like.
