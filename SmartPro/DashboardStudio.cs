@@ -609,6 +609,9 @@ namespace SmartPro
             Heading("The selected card");
             cardCol = Combo("Number", null, CardColumnChanged);
             cardAgg = Combo("Show", null, CardEdited);
+            cardOp = Combo("Calculate", CardOp.Names, CardEdited);
+            cardCol2 = Combo("Second number", null, CardEdited);
+            tips.SetToolTip(cardOp, "For example Profit as % of Sales, or Gross Sales minus Discount. The filters change both numbers.");
             cardLabel = Input("Label", CardEdited);
             tips.SetToolTip(cardLabel, "Leave empty for an automatic label such as Total Amount.");
             cardFmt = Half(false, "Format", new string[] { "Automatic", "Short with units", "Full number", "Percent" }, CardEdited);
@@ -725,11 +728,14 @@ namespace SmartPro
             loading = true;
             CardSpec c = CurrentCard();
             bool on = c != null;
-            foreach (Control x in new Control[] { cardCol, cardAgg, cardLabel, cardFmt, cardDec, cardPrefix, cardSuffix, cardColor, cardCompare, cardSpark, cardTarget, cardSwatch }) x.Enabled = on;
+            foreach (Control x in new Control[] { cardCol, cardAgg, cardOp, cardCol2, cardLabel, cardFmt, cardDec, cardPrefix, cardSuffix, cardColor, cardCompare, cardSpark, cardTarget, cardSwatch }) x.Enabled = on;
             if (on)
             {
                 FillColumns(cardCol, c.Col);
                 FillAgg(cardAgg, c.Col, c.Agg, false);
+                Pick(cardOp, c.Op);
+                FillNumbers(cardCol2, c.Col2);
+                cardCol2.Enabled = c.Op > 0;
                 cardLabel.Text = c.Label;
                 Pick(cardFmt, c.Fmt);
                 Pick(cardDec, c.Dec + 1);
@@ -798,6 +804,19 @@ namespace SmartPro
             int i = cardList.SelectedIndex;
             c.Col = ColumnOf(cardCol);
             c.Agg = c.Col.Length == 0 ? AggKind.Count : AggOf(cardAgg);
+            int op = Math.Max(0, cardOp.SelectedIndex);
+            if (op > 0 && c.Op == 0 && cardCol2.SelectedIndex <= 0)
+            {
+                // just switched on: start with the first other number column
+                foreach (string n in numberCols) if (!string.Equals(n, c.Col, StringComparison.OrdinalIgnoreCase)) { c.Col2 = n; break; }
+            }
+            else c.Col2 = cardCol2.SelectedIndex <= 0 ? "" : (string)cardCol2.Items[cardCol2.SelectedIndex];
+            c.Op = op;
+            c.Agg2 = c.Col2.Length == 0 ? AggKind.Count : (Logic.MeasureIsAvg(c.Col2) ? AggKind.Avg : AggKind.Sum);
+            loading = true;
+            FillNumbers(cardCol2, c.Col2);
+            cardCol2.Enabled = c.Op > 0;
+            loading = false;
             c.Label = cardLabel.Text.Trim();
             c.Fmt = Math.Max(0, cardFmt.SelectedIndex);
             c.Dec = Math.Max(0, cardDec.SelectedIndex) - 1;

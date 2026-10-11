@@ -1,0 +1,28 @@
+// Browser check of calculated cards on the web dashboard made by CalcCardTest (calc-web.html, calc-expect.json).
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
+const require = createRequire(import.meta.url);
+const { chromium } = require('playwright');
+const dir = process.argv[2] || '.';
+const want = JSON.parse(fs.readFileSync(dir + '/calc-expect.json', 'utf8'));
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1300, height: 900 } });
+const errs = []; p.on('pageerror', e => errs.push(e.message));
+await p.goto('file://' + fs.realpathSync(dir + '/calc-web.html'));
+await p.waitForTimeout(800);
+const card = async (i) => ({ label: (await p.locator('#cards .kpi').nth(i).locator('b').textContent()).trim(), value: (await p.locator('#cards .kpi .v').nth(i).textContent()).trim(), note: (await p.locator('#cards .kpi small').nth(i).textContent()).trim() });
+let fails = 0; const check = (name, ok, got) => { if (!ok) fails++; console.log((ok ? 'ok   ' : 'FAIL ') + name + '  ' + JSON.stringify(got)); };
+const pct = (x) => (Math.round(x * 1000) / 10).toFixed(1) + '%';
+let c0 = await card(0), c1 = await card(1);
+check('web: Profit % of Net Sales, no filter', c0.value === pct(want.all) && c0.label === 'Profit % of Net Sales', c0);
+check('web: the note says how it is calculated', c0.note === 'Profit ÷ Net Sales', c0.note);
+check('web: Gross - Net card', c1.label.startsWith('Gross Sales'), c1);
+await p.locator('#filters').getByText('North', { exact: true }).first().click();
+await p.waitForTimeout(500);
+c0 = await card(0);
+check('web: after clicking North the % is North only', c0.value === pct(want.north), { got: c0.value, want: pct(want.north) });
+await p.screenshot({ path: dir + '/calc-web.png', clip: { x: 0, y: 0, width: 1300, height: 360 } });
+check('web: no script errors', errs.length === 0, errs);
+console.log(fails ? fails + ' FAILED' : 'ALL PASSED');
+await b.close();
+process.exit(fails ? 1 : 0);

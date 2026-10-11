@@ -44,6 +44,7 @@ Smart Dashboard, Email Automation (mail merge with PDF), Excel to Python / SQL, 
 | Files | Files Manager, Auto File Organizer | ➕ File Organizer: list files in a sheet, **rename from the sheet**, sort into folders by type / month / name, every change logged |
 | Web table | Export as Web Table | ➕⭐ Web Table: search, sort, a filter under every column (`>200000` works), totals of the rows shown, CSV, print, dark mode, phone. Stays on your PC (XLBooster's chart publishing puts data on a public GitHub repo) |
 | Excel to code | Excel to Python / SQL | ➕ Table to SQL / Python: SQL Server, MySQL, PostgreSQL, SQLite or pandas, with column types |
+| Calculated KPIs | "Gross Sales, Net Sales & Profit" in their dashboard video | ➕ Calculated cards: % of, divided by, minus, plus; they follow the filters in Excel and on the web |
 | Dashboards | Smart Dashboard, Smart Chart | ⭐ Free Dashboard Studio: 78 designs, 26 themes, 12 chart kinds, slicers, Edit / Refresh, Web Dashboard, BI export, L / Cr units |
 | Analysis | AI analysis (not described) | ⭐ Smart Analyst, Why It Changed, Forecast, Ask Your Data, ABC, Ageing, Outliers |
 | Formula help | – | ⭐ Explain Formula, Formula Risk Scan, Snapshot / What Changed |

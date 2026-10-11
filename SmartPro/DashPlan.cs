@@ -46,6 +46,7 @@ namespace SmartPro
     {
         public string Label = "";
         public PlanField Field;           // its number in the KPI pivot table (null when the card counts different values)
+        public PlanField Field2;          // the second number of a card that calculates
         public int DistinctPivot = -1;    // the pivot table that lists the different values
         public int MonthPivot = -1;       // the pivot table with the months, for the comparison and the small trend line
         public CardFormat Format;
@@ -328,6 +329,13 @@ namespace SmartPro
                     d.Columns = 3;
                     Pivots.Add(d);
                     pc.DistinctPivot = Pivots.Count - 1;
+                }
+                else if (c.Op > 0)
+                {
+                    pc.Field = Field(c.Col, c.Agg, "K" + (i + 1).ToString(Inv));
+                    pc.Field2 = Field(c.Col2, c.Agg2, "K" + (i + 1).ToString(Inv) + "b");
+                    kpi.Data.Add(pc.Field);
+                    kpi.Data.Add(pc.Field2);
                 }
                 else
                 {
@@ -671,6 +679,20 @@ namespace SmartPro
         public static string KpiValue(string caption, string pivotCell)
         {
             return "=IFERROR(GETPIVOTDATA(" + Q(caption) + "," + pivotCell + "),0)";
+        }
+
+        // a card that calculates: both numbers come from the KPI pivot table, so the filters change it too
+        public static string KpiCalc(int op, string caption1, string caption2, string pivotCell)
+        {
+            string a = "IFERROR(GETPIVOTDATA(" + Q(caption1) + "," + pivotCell + "),0)";
+            string b = "IFERROR(GETPIVOTDATA(" + Q(caption2) + "," + pivotCell + "),0)";
+            switch (op)
+            {
+                case CardOp.Percent:
+                case CardOp.Divide: return "=IFERROR(" + a + "/" + b + ",0)";
+                case CardOp.Minus: return "=" + a + "-" + b;
+                default: return "=" + a + "+" + b;
+            }
         }
 
         // how many different values a pivot table lists (blank cells are not a value)

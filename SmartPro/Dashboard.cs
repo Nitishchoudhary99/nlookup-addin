@@ -722,7 +722,8 @@ namespace SmartPro
                 int r = CardRow0 + i;
                 string v = Abs(r, 2);
                 ws.Cells[r, 1].Value2 = "'" + pc.Label;
-                if (pc.Field != null) ws.Cells[r, 2].Formula = DashFormula.KpiValue(pc.Field.Caption, kpiCell);
+                if (pc.Field != null && pc.Field2 != null) ws.Cells[r, 2].Formula = DashFormula.KpiCalc(c.Op, pc.Field.Caption, pc.Field2.Caption, kpiCell);
+                else if (pc.Field != null) ws.Cells[r, 2].Formula = DashFormula.KpiValue(pc.Field.Caption, kpiCell);
                 else
                 {
                     PlanPivot d = pc.DistinctPivot >= 0 ? plan.Pivots[pc.DistinctPivot] : null;
@@ -746,7 +747,7 @@ namespace SmartPro
                 }
                 else if (c.Compare > 0) ws.Cells[r, 4].Value2 = "' ";
                 else if (c.Target > 0) ws.Cells[r, 4].Formula = DashFormula.TargetNote(v, c.Target, s.Unit);
-                else if (c.Agg == AggKind.Sum && c.Col.Length > 0)
+                else if (c.Agg == AggKind.Sum && c.Col.Length > 0 && c.Op == CardOp.None)
                 {
                     ws.Cells[r, 10].Formula = DashFormula.PerRow(v, rowsRef);
                     ws.Cells[r, 4].Formula = DashFormula.PerRowNote(Abs(r, 10), s.Unit == 0);
@@ -1030,7 +1031,9 @@ namespace SmartPro
         static string ValueNow(Job j, int i)
         {
             CardSpec c = j.S.Cards[i];
-            return NumFmt.Apply(DashEngine.Scalar(j.T, c.Col, c.Agg), j.Plan.Cards[i].Format);
+            double v = DashEngine.Scalar(j.T, c.Col, c.Agg);
+            if (c.Op > 0) v = CardOp.Apply(c.Op, v, DashEngine.Scalar(j.T, c.Col2, c.Agg2));
+            return NumFmt.Apply(v, j.Plan.Cards[i].Format);
         }
 
         // the note under the number: 0 = none, 1 = a fixed text, 2 = a formula
@@ -1040,7 +1043,7 @@ namespace SmartPro
             if (compare) return 2;
             if (c.Compare > 0) return 0;
             if (c.Target > 0) return 2;
-            if (c.Agg == AggKind.Sum && c.Col.Length > 0) return 2;
+            if (c.Agg == AggKind.Sum && c.Col.Length > 0 && c.Op == CardOp.None) return 2;
             fixedText = DashText.CardNote(c);
             return fixedText.Length > 0 ? 1 : 0;
         }

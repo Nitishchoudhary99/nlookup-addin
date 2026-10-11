@@ -854,12 +854,14 @@ namespace SmartPro
             CardFormat f = new CardFormat();
             f.Indian = s.Unit == 0;
             f.Dec = c.Dec;
-            if (c.Fmt == 3) f.Mode = 3;
+            if (c.Fmt == 3 || (c.Fmt == 0 && c.Op == CardOp.Percent)) f.Mode = 3;
+            else if (c.Fmt == 0 && c.Op == CardOp.Divide) { f.Mode = 2; if (f.Dec < 0) f.Dec = 2; }
             else if (c.Fmt == 2 || s.Unit == 2) f.Mode = 2;
             else f.Mode = s.Unit == 1 ? 1 : 0;
             f.Prefix = c.Prefix;
             f.Suffix = c.Suffix;
-            bool money = c.Col.Length > 0 && c.Agg != AggKind.Count && c.Agg != AggKind.Distinct && Logic.MeasureRank(c.Col) == 1;
+            bool money = c.Col.Length > 0 && c.Agg != AggKind.Count && c.Agg != AggKind.Distinct && Logic.MeasureRank(c.Col) == 1 &&
+                         (c.Op == CardOp.None || c.Op == CardOp.Minus || c.Op == CardOp.Plus);
             if (f.Prefix.Length == 0 && s.Currency.Length > 0 && money && f.Mode != 3) f.Prefix = s.Currency + " ";
             return f;
         }
@@ -921,7 +923,18 @@ namespace SmartPro
 
         public static string CardLabel(CardSpec c)
         {
-            return c.Label.Trim().Length > 0 ? c.Label.Trim() : Measure(c.Col, c.Agg);
+            if (c.Label.Trim().Length > 0) return c.Label.Trim();
+            if (c.Op == CardOp.None) return Measure(c.Col, c.Agg);
+            string a = Short(c.Col, c.Agg), b = Short(c.Col2, c.Agg2);
+            if (c.Op == CardOp.Percent) return a + " % of " + b;
+            if (c.Op == CardOp.Divide) return a + " per " + b;
+            return a + " " + CardOp.Signs[c.Op] + " " + b;
+        }
+
+        // "Profit \u00F7 Net Sales": the note under a card that calculates
+        public static string CalcNote(CardSpec c)
+        {
+            return Short(c.Col, c.Agg) + " " + (c.Op == CardOp.Percent ? "\u00F7" : CardOp.Signs[c.Op]) + " " + Short(c.Col2, c.Agg2);
         }
 
         public static string DimName(string dim)
@@ -974,6 +987,7 @@ namespace SmartPro
         // the note under the number of a card, when the card compares nothing
         public static string CardNote(CardSpec c)
         {
+            if (c.Op > 0) return CalcNote(c);
             if (c.Col.Length == 0) return "rows after filters";
             if (c.Agg == AggKind.Avg) return "average of all rows";
             if (c.Agg == AggKind.Max) return "largest value";

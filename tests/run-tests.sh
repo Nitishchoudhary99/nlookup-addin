@@ -9,3 +9,9 @@ OUT=bin/Debug/net48
 cp ~/.nuget/packages/exceldna.integration/1.8.0/lib/net452/ExcelDna.Integration.dll "$OUT/"
 mcs -nologo -r:"$OUT/ExcelDna.Integration.dll" -r:System.Windows.Forms.dll -r:System.Xml.dll -r:System.Core.dll -r:System.Web.Extensions.dll LogicTests.cs -out:"$OUT/LogicTests.exe"
 cd "$OUT" && mono LogicTests.exe
+mcs -nologo -r:System.Core.dll ../../../CalcCardTest.cs -out:CalcCardTest.exe
+mono CalcCardTest.exe
+# the web dashboard in a real browser, when Playwright is installed
+if NODE_PATH=$(npm root -g 2>/dev/null) node -e "require('playwright')" 2>/dev/null; then
+  NODE_PATH=$(npm root -g) node ../../../calc-web.mjs .
+fi

@@ -449,15 +449,22 @@ function chartTitle(c,r){
  if(c.showAs===2)t+=' (running total)';
  return t;
 }
+// the number of a card; a card can calculate with a second number (% of, divide, minus, plus)
+function cardValue(c,mask){
+ var a=scalar(c.col,c.agg,mask);if(!c.op)return a;
+ var b=scalar(c.col2,c.agg2,mask);
+ return c.op<=2?(b?a/b:0):(c.op===3?a-b:a+b);
+}
 // the line under the number of a card
 function cardNote(c,mask){
  var v,n,ch;
+ if(c.op&&!(c.target>0))return{text:c.opnote||'',sign:0};
  if(c.cmp>0&&YMD){
   ch=change(months(c.col,c.agg,mask),c.cmp);
   if(ch!==ch)return{text:'',sign:0};
   return{text:(ch>=0?'\u25B2 ':'\u25BC ')+fixed(Math.abs(ch)*100,1)+'% '+(c.cmp===2?'vs same month last year':'vs previous month'),sign:ch>=0?1:-1};
  }
- if(c.target>0){v=scalar(c.col,c.agg,mask);return{text:fixed(v/c.target*100,0)+'% of target '+shortNum(c.target,UNIT,-1),sign:0};}
+ if(c.target>0){v=cardValue(c,mask);return{text:fixed(v/c.target*100,0)+'% of target '+shortNum(c.target,UNIT,-1),sign:0};}
  if(c.agg===0&&c.col){v=scalar(c.col,c.agg,mask);n=scalar('',2,mask);return{text:'avg per row: '+grouped(n>0?v/n:0,2,UNIT===0),sign:0};}
  if(!c.col)return{text:'rows after filters',sign:0};
  return{text:['','average of all rows','filled cells','largest value','smallest value','different values'][c.agg]||'',sign:0};
@@ -736,7 +743,7 @@ function spark(V,color){
 function drawCards(){
  var m=maskOf(null),h='';
  CA.forEach(function(c,i){
-  var accent=pickColor(c.color,i),k=cardLook(st.cards,accent),v=scalar(c.col,c.agg,m),note=cardNote(c,m);
+  var accent=pickColor(c.color,i),k=cardLook(st.cards,accent),v=cardValue(c,m),note=cardNote(c,m);
   var noteColor=k.plain&&note.sign?(note.sign>0?(TH.d?'#4ade80':'#16a34a'):(TH.d?'#f87171':'#dc2626')):k.note;
   var bg=k.grad?'linear-gradient(90deg,'+k.bg+','+k.bg2+')':k.bg;
   h+='<div class=""kpi'+(k.kind===2?' side':'')+'"" style=""background:'+bg+(k.kind===3?';box-shadow:inset 0 0 0 1.5px '+mix(TH.card,k.line,0.6):'')+'"">';

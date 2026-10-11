@@ -33,6 +33,19 @@ namespace SmartPro
         Button undoButton, redoButton;
 
         static readonly string[] HowNames = { "Total", "Average", "Count of rows" };
+        ComboBox cardOp, cardCol2;
+
+        // the number columns, with the rows first
+        void FillNumbers(ComboBox box, string current)
+        {
+            List<string> items = new List<string>();
+            items.Add(RowsChoice);
+            items.AddRange(numberCols);
+            Fill(box, items);
+            int at = 0;
+            for (int i = 1; i < items.Count; i++) if (string.Equals(items[i], current, StringComparison.OrdinalIgnoreCase)) at = i;
+            Pick(box, at);
+        }
 
         // ------------------------------------------------------------------ the Easy tab
         void BuildEasyTab()
@@ -489,6 +502,33 @@ namespace SmartPro
                 Item(m.Items, "Compare with the month before", false, delegate { c.Compare = c.Compare == 1 ? 0 : 1; AfterQuickChange(null); }).Checked = c.Compare == 1;
                 Item(m.Items, "Compare with the same month last year", false, delegate { c.Compare = c.Compare == 2 ? 0 : 2; AfterQuickChange(null); }).Checked = c.Compare == 2;
                 Item(m.Items, "Small trend line", false, delegate { c.Spark = !c.Spark; AfterQuickChange(null); }).Checked = c.Spark;
+            }
+            // calculate with a second number: Profit % of Net Sales, Gross Sales - Discount ...
+            if (c.Col.Length > 0 && c.Agg != AggKind.Distinct)
+            {
+                ToolStripMenuItem calc = Sub(m.Items, "Calculate");
+                string[] how = { "", "As % of", "Divided by", "Minus", "Plus" };
+                for (int op = 1; op <= 4; op++)
+                {
+                    ToolStripMenuItem o = Sub(calc.DropDownItems, how[op]);
+                    int oo = op;
+                    foreach (string col in numberCols)
+                    {
+                        if (string.Equals(col, c.Col, StringComparison.OrdinalIgnoreCase)) continue;
+                        string cc = col;
+                        Item(o.DropDownItems, col, false, delegate
+                        {
+                            c.Op = oo;
+                            c.Col2 = cc;
+                            c.Agg2 = Logic.MeasureIsAvg(cc) ? AggKind.Avg : AggKind.Sum;
+                            c.Label = "";
+                            c.Compare = 0;
+                            c.Spark = false;
+                            AfterQuickChange("The card now shows " + DashText.CardLabel(c) + ".");
+                        }).Checked = c.Op == oo && string.Equals(c.Col2, col, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+                if (c.Op > 0) Item(calc.DropDownItems, "No calculation", false, delegate { c.Op = CardOp.None; c.Label = ""; AfterQuickChange(null); });
             }
             ToolStripMenuItem col6 = Sub(m.Items, "Colour");
             ColourItems(col6, c.Color, delegate (int v) { c.Color = v; AfterQuickChange("Colour changed."); });

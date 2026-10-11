@@ -222,8 +222,20 @@ namespace SmartPro
                     s.Cards.RemoveAt(i);
                     continue;
                 }
-                // a card that counts different values has no months to compare
-                if (!t.HasDate || c.Agg == AggKind.Distinct || (c.Col.Length > 0 && c.Agg != AggKind.Count && !t.Find(c.Col).IsNum))
+                // a calculation needs a second number that exists; it does not count different values
+                if (c.Op > 0)
+                {
+                    if (c.Col2.Length == 0) c.Agg2 = AggKind.Count;
+                    if (c.Agg == AggKind.Distinct) c.Agg = AggKind.Sum;
+                    if (c.Agg2 == AggKind.Distinct) c.Agg2 = AggKind.Sum;
+                    if (!NumberOk(t, c.Col2, c.Agg2) || (c.Col2.Length > 0 && c.Agg2 != AggKind.Count && !t.Find(c.Col2).IsNum))
+                    {
+                        notes.Add("Card '" + DashText.CardLabel(c) + "': the second number '" + c.Col2 + "' is not a number column, so it shows the first number only.");
+                        c.Op = CardOp.None;
+                    }
+                }
+                // a card that counts different values, or calculates, has no months to compare
+                if (!t.HasDate || c.Agg == AggKind.Distinct || c.Op > 0 || (c.Col.Length > 0 && c.Agg != AggKind.Count && !t.Find(c.Col).IsNum))
                 {
                     c.Compare = 0;
                     c.Spark = false;

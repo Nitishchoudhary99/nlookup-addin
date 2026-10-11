@@ -175,7 +175,11 @@ namespace SmartPro
 
             // ---- the columns ----
             Dictionary<string, int> need = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            foreach (CardSpec c in s.Cards) WantNumber(t, need, c.Col, c.Agg);
+            foreach (CardSpec c in s.Cards)
+            {
+                WantNumber(t, need, c.Col, c.Agg);
+                if (c.Op > 0) WantNumber(t, need, c.Col2, c.Agg2);
+            }
             foreach (ChartSpec c in s.Charts)
             {
                 WantGroup(t, need, c.Dim);
@@ -292,6 +296,13 @@ namespace SmartPro
                 Flag(sb, "spark", c.Spark && t.HasDate);
                 Key(sb, "target");
                 Num(sb, c.Target > 0 ? c.Target : 0);
+                if (c.Op > 0)
+                {
+                    Int(sb, "op", c.Op);
+                    Text(sb, "col2", c.Col2);
+                    Int(sb, "agg2", c.Agg2);
+                    Text(sb, "opnote", DashText.CalcNote(c));
+                }
                 sb.Append('}');
             }
             sb.Append(']');

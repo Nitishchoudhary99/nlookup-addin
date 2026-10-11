@@ -36,6 +36,26 @@ namespace SmartPro
         public static bool IsLine(int k) { return k == Line || k == Area; }
     }
 
+    // A KPI card can calculate with a second number: Profit % of Sales, Gross - Discount ...
+    internal static class CardOp
+    {
+        public const int None = 0, Percent = 1, Divide = 2, Minus = 3, Plus = 4;
+        public static readonly string[] Signs = { "", "% of", "\u00F7", "\u2212", "+" };
+        public static readonly string[] Names = { "No (just this number)", "% of the second number", "\u00F7 the second number", "\u2212 the second number", "+ the second number" };
+
+        public static double Apply(int op, double a, double b)
+        {
+            switch (op)
+            {
+                case Percent:
+                case Divide: return b == 0 || double.IsNaN(b) ? 0 : a / b;
+                case Minus: return a - b;
+                case Plus: return a + b;
+                default: return a;
+            }
+        }
+    }
+
     // Date parts a chart or a filter can group by. They are written like column names that start with @.
     internal static class DatePart
     {
@@ -97,6 +117,9 @@ namespace SmartPro
         public int Compare;            // 0 none, 1 latest month with the month before, 2 latest month with the same month last year
         public bool Spark;             // small trend line
         public double Target;          // 0 = no target
+        public int Op;                 // CardOp: calculate with a second number
+        public string Col2 = "";       // the second number ("" = rows)
+        public int Agg2;
 
         public CardSpec Clone()
         {
@@ -112,6 +135,9 @@ namespace SmartPro
             c.Compare = Compare;
             c.Spark = Spark;
             c.Target = Target;
+            c.Op = Op;
+            c.Col2 = Col2;
+            c.Agg2 = Agg2;
             return c;
         }
     }
@@ -267,6 +293,12 @@ namespace SmartPro
                 r.Set("cmp", c.Compare);
                 r.Set("spark", c.Spark);
                 r.Set("target", c.Target);
+                if (c.Op > 0)
+                {
+                    r.Set("op", c.Op);
+                    r.Set("col2", c.Col2);
+                    r.Set("agg2", c.Agg2);
+                }
                 sb.Append(r.ToLine()).Append('\n');
             }
             foreach (ChartSpec c in Charts)
@@ -372,6 +404,9 @@ namespace SmartPro
                     c.Compare = Clamp(r.GetInt("cmp", 0), 0, 2);
                     c.Spark = r.GetBool("spark", false);
                     c.Target = r.GetNum("target", 0);
+                    c.Op = Clamp(r.GetInt("op", 0), 0, 4);
+                    c.Col2 = r.Get("col2", "");
+                    c.Agg2 = Clamp(r.GetInt("agg2", 0), 0, 4);
                     d.Cards.Add(c);
                 }
                 else if (r.Kind == "chart")

@@ -37,6 +37,17 @@ label / currency settings. DocBrisk had all of these, but behind many settings. 
 When the main number changes, the first card and every chart that showed the old number follow it; if another card
 already showed the new number, the two cards swap so nothing is shown twice. Code: `StudioEasy.cs`.
 
+### Calculated KPI cards (3.3)
+
+A card can calculate with a second number: **% of** (Profit % of Net Sales), **divided by** (Sales per Order),
+**minus** (Gross Sales - Net Sales) or **plus**. Set it on the Cards tab ("Calculate" and "Second number") or with a
+right-click on the card > Calculate. Both numbers follow the filters: in Excel the card reads both from the KPI pivot
+table (`DashFormula.KpiCalc`), in the web dashboard both are worked out for the rows shown. Labels are automatic
+("Profit % of Net Sales"), a % card is shown as a percent, and a calculation whose second column is missing falls back
+to the first number with a note. A calculated card does not compare months or draw a trend line.
+Tests: `tests/CalcCardTest.cs` (maths, labels, save / open, Excel formula, preview) and `tests/calc-web.mjs` (the web
+dashboard in Chromium, before and after a filter click).
+
 ### Build notes for 3.3
 
 - No new NuGet packages. Two Framework references were added: `System.Net.Http` and `System.Web.Extensions` (JSON).

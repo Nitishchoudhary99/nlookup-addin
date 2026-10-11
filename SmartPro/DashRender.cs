@@ -235,10 +235,15 @@ namespace SmartPro
         }
 
         // ------------------------------------------------------------------ KPI card
-        public static string CardValueText(DataTab t, DashSpec s, DashCache cache, CardSpec c)
+        public static double CardValue(DataTab t, DashCache cache, CardSpec c)
         {
             double v = cache.Scalar(t, c.Col, c.Agg);
-            return NumFmt.Apply(v, NumFmt.Resolve(c, s));
+            return c.Op > 0 ? CardOp.Apply(c.Op, v, cache.Scalar(t, c.Col2, c.Agg2)) : v;
+        }
+
+        public static string CardValueText(DataTab t, DashSpec s, DashCache cache, CardSpec c)
+        {
+            return NumFmt.Apply(CardValue(t, cache, c), NumFmt.Resolve(c, s));
         }
 
         // the line under the number; sign says whether it is a rise (1), a fall (-1) or neither (0)
@@ -252,9 +257,10 @@ namespace SmartPro
                 sign = ch >= 0 ? 1 : -1;
                 return (ch >= 0 ? "\u25B2 " : "\u25BC ") + Math.Abs(ch).ToString("0.0%", Inv) + " " + DashText.CompareWords(c.Compare);
             }
+            if (c.Op > 0 && c.Target <= 0) return DashText.CalcNote(c);
             if (c.Target > 0)
             {
-                double v = cache.Scalar(t, c.Col, c.Agg);
+                double v = CardValue(t, cache, c);
                 return (v / c.Target).ToString("0%", Inv) + " of target " + NumFmt.Short(c.Target, s.Unit, -1);
             }
             if (c.Agg == AggKind.Sum && c.Col.Length > 0)
