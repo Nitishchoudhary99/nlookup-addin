@@ -23,6 +23,20 @@ the DocBrisk group, because they are used every day.
 | Web Table | Free | A table as one HTML page: search, sort, filters per column (`>1000` works on numbers), totals of the rows shown, CSV, print, dark mode, phone friendly. |
 | Table to SQL / Python | Pro | CREATE TABLE + INSERT (SQL Server, MySQL, PostgreSQL, SQLite) or a pandas DataFrame, with column types. |
 
+### Dashboard customisation made easy (3.3)
+
+Their video "Create Excel Dashboard in 10 Minutes" shows KPI cards, distinct count, Top 5, pie by zone, slicers and
+label / currency settings. DocBrisk had all of these, but behind many settings. Dashboard Studio now has:
+
+| New | What it does |
+|---|---|
+| **Easy** tab (opens first) | Five plain questions on one screen: the main number (and total / average / count), break it down by (tick = one chart), filter buttons (tick), 8 colour themes as big buttons, title. Every change shows at once in the preview. Number and ID columns are not offered to group by. |
+| **Right-click in the preview** | On a chart: chart type, group by, number, how many (Top 5 / 10 / 15 / all), colour, width, values on it, move, copy, remove. On a card: number, show as, **count different values of** (Order ID -> "Orders"), compare with last month / last year, trend line, colour, move, remove. On a filter: remove. Anywhere: add a chart, add a card, undo. |
+| **Undo / Redo** | Buttons at the bottom and Ctrl+Z / Ctrl+Y for every change in the window (a text box keeps its own Ctrl+Z). |
+
+When the main number changes, the first card and every chart that showed the old number follow it; if another card
+already showed the new number, the two cards swap so nothing is shown twice. Code: `StudioEasy.cs`.
+
 ### Build notes for 3.3
 
 - No new NuGet packages. Two Framework references were added: `System.Net.Http` and `System.Web.Extensions` (JSON).
@@ -199,6 +213,7 @@ chart as CSV, and print or save as PDF. It also works on a phone. The file carri
 | `AiFormula.cs` | AI Formula (through the docbrisk.com proxy) |
 | `FileTools.cs` | File Organizer |
 | `ExportMore.cs` | Web Table, Table to SQL / Python |
+| `StudioEasy.cs` | Dashboard Studio: the Easy tab, right-click menus in the preview, Undo / Redo |
 | `ProPlan.cs` | the prices and the words of the Pro offer |
 | `SmartTools.cs` | Explain Formula, Smart Analyst, Duplicate Payments, Mail to Each Party |
 | `Settings.cs` | saved choices such as the look of the last dashboard |

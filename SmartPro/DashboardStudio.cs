@@ -66,7 +66,7 @@ namespace SmartPro
         }
     }
 
-    internal sealed class StudioForm : Form
+    internal sealed partial class StudioForm : Form
     {
         // ---- the design and the table ----
         readonly DataTab t;
@@ -171,6 +171,7 @@ namespace SmartPro
             tabs.Width = S(468);
             Controls.Add(tabs);
             gallery = new GalleryPanel(this, t.HasDate);
+            BuildEasyTab();
             BuildDesignsTab();
             BuildCardsTab();
             BuildChartsTab();
@@ -187,6 +188,7 @@ namespace SmartPro
             saveButton = MakeButton(bottom, "Save design...", 0, S(10), S(112));
             openButton = MakeButton(bottom, "Open design...", 0, S(10), S(112));
             againButton = MakeButton(bottom, "Start again", 0, S(10), S(100));
+            UndoButtons(bottom);
             okButton.Font = bold;
             cancelButton.DialogResult = DialogResult.Cancel;
             CancelButton = cancelButton;
@@ -205,8 +207,8 @@ namespace SmartPro
             PlaceButtons();
 
             AllToControls();
-            SetHint(editing ? "This is the design of your dashboard. Change what you like; click a card or a chart in the preview to edit it."
-                            : "Pick a design on the left, then change what you like. Click a card or a chart in the preview to edit it.");
+            SetHint(editing ? "This is your dashboard. Change it on the Easy tab, or right-click any chart or card in the preview."
+                            : "Answer the questions on the Easy tab, or right-click any chart or card in the preview. Ready designs: the Designs tab.");
         }
 
         protected override void OnLoad(EventArgs e)
@@ -277,7 +279,14 @@ namespace SmartPro
             saveButton.Left = okButton.Left - S(22) - saveButton.Width;
             openButton.Left = saveButton.Left - S(8) - openButton.Width;
             againButton.Left = openButton.Left - S(8) - againButton.Width;
-            hint.SetBounds(S(12), S(6), Math.Max(S(40), againButton.Left - S(24)), S(38));
+            int leftmost = againButton.Left;
+            if (undoButton != null)
+            {
+                redoButton.Left = againButton.Left - S(22) - redoButton.Width;
+                undoButton.Left = redoButton.Left - S(6) - undoButton.Width;
+                leftmost = undoButton.Left;
+            }
+            hint.SetBounds(S(12), S(6), Math.Max(S(40), leftmost - S(24)), S(38));
         }
 
         // ------------------------------------------------------------------ what the table offers
@@ -1718,6 +1727,7 @@ namespace SmartPro
             FiltersToControls();
             LookToControls();
             PageToControls();
+            EasyToControls();
             loading = was;
             gallery.Invalidate();
             preview.Relayout();
@@ -1726,6 +1736,7 @@ namespace SmartPro
         // after every change of the design: the preview and the small pictures are drawn again
         void Changed()
         {
+            RecordChange();
             version++;
             cache.Trim(600);
             gallery.Invalidate();
@@ -1748,16 +1759,16 @@ namespace SmartPro
             {
                 if (kind == Box.Card && index >= 0 && index < s.Cards.Count)
                 {
-                    tabs.SelectedIndex = 1;
+                    tabs.SelectedIndex = TabCards;
                     if (index < cardList.Items.Count) cardList.SelectedIndex = index;
                 }
                 else if (kind == Box.Chart && index >= 0 && index < s.Charts.Count)
                 {
-                    tabs.SelectedIndex = 2;
+                    tabs.SelectedIndex = TabCharts;
                     if (index < chartList.Items.Count) chartList.SelectedIndex = index;
                 }
-                else if (kind == Box.Slicer) tabs.SelectedIndex = 3;
-                else if (kind == Box.Header || kind == Box.Insights) tabs.SelectedIndex = 5;
+                else if (kind == Box.Slicer) tabs.SelectedIndex = TabFilters;
+                else if (kind == Box.Header || kind == Box.Insights) tabs.SelectedIndex = TabPage;
                 SelectBox(kind, index);
             }
             catch (Exception ex) { Oops(ex); }
@@ -1983,15 +1994,18 @@ namespace SmartPro
             base.OnMouseDown(e);
             Focus();        // so that the mouse wheel scrolls the preview
             float x = e.X - AutoScrollPosition.X, y = e.Y - AutoScrollPosition.Y;
+            bool right = e.Button == MouseButtons.Right;
             // the last box drawn that holds the point
             for (int i = hits.Count - 1; i >= 0; i--)
             {
                 if (hits[i].R.Contains(x, y))
                 {
-                    owner.PreviewClicked(hits[i].Kind, hits[i].Index);
+                    if (right) owner.PreviewMenu(hits[i].Kind, hits[i].Index, PointToScreen(e.Location));
+                    else owner.PreviewClicked(hits[i].Kind, hits[i].Index);
                     return;
                 }
             }
+            if (right) owner.PreviewMenu(-1, -1, PointToScreen(e.Location));
         }
     }
 

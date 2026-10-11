@@ -137,6 +137,10 @@ class T {
     Eq(fld(html,"Code"), "bad_answer", "proxy answer: not JSON (office proxy page)");
     object notEq = pp(200, "{\"formula\":\"SUM(A:A)\"}");
     Eq(fld(notEq,"Formula"), null, "proxy answer: text without = is not inserted");
+
+    // ---- Dashboard Studio, Easy: the label of a count of different values ----
+    Func<string, object> cl = x => A.GetType("SmartPro.StudioForm").GetMethod("CountLabel", BindingFlags.Static|BindingFlags.NonPublic).Invoke(null, new object[]{x});
+    Eq(cl("Order ID") + "|" + cl("Invoice No") + "|" + cl("Party") + "|" + cl("Category") + "|" + cl("Customers") + "|" + cl("Day"), "Orders|Invoices|Parties|Categories|Customers|Days", "count labels");
     Console.WriteLine(fails == 0 ? "ALL PASSED" : fails + " FAILED");
     Environment.Exit(fails == 0 ? 0 : 1);
   }
