@@ -39,6 +39,10 @@ table.t td{padding:22px;border-bottom:2px solid #e2e8f0;font-family:Consolas,mon
 
 <div class="scene" id="s3"><div class="tag">AI Formula</div><h2>Apne shabdon mein likho,<br>formula ready</h2><div class="shot" style="width:940px"><img src="img/11-ai-formula.png"></div><p class="sub">Koi formula yaad rakhne ki zaroorat nahi</p></div>
 
+<div class="scene" id="e1"><div class="tag">Dashboard Studio</div><h2>Dashboard banana<br>ab aur aasaan</h2><p class="sub">Number chuno, tick karo, colour chuno.<br>Bas.</p><div class="shot" style="width:600px;margin-top:50px"><img src="img/easy-crop.png"></div></div>
+
+<div class="scene" id="e2"><div class="tag">Right-click</div><h2>Kisi bhi chart pe<br>right-click karo</h2><div class="shot" style="width:860px"><img src="img/rc-crop.png"></div><p class="sub">Type, colour, Top 10, sab turant.<br>Galti hui? Ctrl+Z</p></div>
+
 <div class="scene" id="s4"><div class="tag">Sheet Navigator</div><h2>50 sheets?<br>Ek second mein jump</h2><div style="margin-top:50px"><span class="key">Ctrl</span>+<span class="key">Shift</span>+<span class="key">J</span></div><div class="shot" style="width:880px;margin-top:60px"><img src="img/8-sheet-navigator.png"></div></div>
 
 <div class="scene" id="s5"><div class="tag">Sheet Manager</div><h2>Hide, rename, colour<br>sab ek saath</h2><div class="shot" style="width:940px"><img src="img/10-sheet-manager.png"></div></div>
@@ -63,8 +67,8 @@ table.t td{padding:22px;border-bottom:2px solid #e2e8f0;font-family:Consolas,mon
 <div class="brand">DocBrisk for Excel</div><div class="bar"><i id="bar"></i></div>
 <script>
 // [scene, start, end] in seconds
-const S=[['s1',0,5],['s2',5,12],['s3',12,18],['s4',18,23.5],['s5',23.5,28.5],['s6',28.5,34],['s7',34,39.5],['s8',39.5,45.5],['s9',45.5,51],['s10',51,58]];
-const T=58, F=0.45;
+const S=[['s1',0,6],['s2',6,13.5],['s3',13.5,19.5],['e1',19.5,26.5],['e2',26.5,33],['s4',33,38.5],['s5',38.5,43],['s6',43,48],['s7',48,53],['s8',53,59.5],['s9',59.5,64],['s10',64,72]];
+const T=72, F=0.45;
 const ease=x=>x<0?0:x>1?1:1-Math.pow(1-x,3);
 function render(t){
   for(const [id,a,b] of S){
