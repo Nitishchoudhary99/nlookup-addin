@@ -1,0 +1,89 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0b1220;font-family:'Inter',sans-serif;color:#fff}
+.bg{position:absolute;inset:0;background:radial-gradient(1200px 900px at 80% 0%,#1d4ed8 0%,transparent 60%),radial-gradient(900px 900px at 0% 100%,#0f766e 0%,transparent 55%),#0b1220}
+.scene{position:absolute;inset:0;opacity:0;display:flex;flex-direction:column;align-items:center;padding:150px 70px 0}
+.tag{font-size:34px;font-weight:700;letter-spacing:4px;color:#93c5fd;text-transform:uppercase;margin-bottom:28px}
+h1{font-size:108px;line-height:1.05;font-weight:800;text-align:center;letter-spacing:-2px}
+h2{font-size:82px;line-height:1.08;font-weight:800;text-align:center;letter-spacing:-1px}
+p.sub{font-size:46px;line-height:1.3;color:#cbd5e1;text-align:center;margin-top:34px;font-weight:500}
+.shot{margin-top:70px;border-radius:26px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 2px rgba(255,255,255,.12);background:#fff}
+.shot img{display:block;width:100%}
+.pill{display:inline-block;background:#2563eb;color:#fff;font-weight:800;font-size:44px;padding:18px 34px;border-radius:999px;margin-top:40px}
+.key{display:inline-block;background:#fff;color:#0f172a;font-weight:800;font-size:56px;padding:14px 26px;border-radius:16px;margin:0 8px;box-shadow:0 8px 0 #94a3b8}
+.na{font-family:Consolas,monospace;font-size:120px;color:#f87171;font-weight:800;margin-top:60px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:70px;width:100%}
+.cell{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.14);border-radius:24px;padding:30px 30px;font-size:40px;font-weight:700;line-height:1.2}
+.cell small{display:block;font-size:30px;color:#94a3b8;font-weight:500;margin-top:8px}
+table.t{margin-top:70px;border-collapse:collapse;font-size:44px;width:100%;background:#fff;color:#0f172a;border-radius:20px;overflow:hidden}
+table.t th{background:#0f172a;color:#fff;padding:22px;text-align:left}
+table.t td{padding:22px;border-bottom:2px solid #e2e8f0;font-family:Consolas,monospace}
+.ok{color:#15803d;font-weight:800;font-family:'Inter'}.bad{color:#b91c1c;font-weight:800;font-family:'Inter'}
+.price{margin-top:60px;background:#fff;color:#0f172a;border-radius:34px;padding:60px 60px;width:100%;text-align:center}
+.price .big{font-size:150px;font-weight:900;letter-spacing:-4px;color:#1d4ed8}
+.price .per{font-size:48px;color:#475569;font-weight:600}
+.list{margin-top:44px;font-size:46px;line-height:1.7;font-weight:600;text-align:left}
+.brand{position:absolute;left:0;right:0;bottom:80px;text-align:center;font-size:36px;color:#94a3b8;font-weight:600}
+.bar{position:absolute;left:70px;right:70px;bottom:50px;height:8px;background:rgba(255,255,255,.12);border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:#60a5fa;width:0}
+</style></head><body><div class="bg"></div>
+
+<div class="scene" id="s1"><div class="tag">Excel users, dhyaan do</div><h1>VLOOKUP lagaaya<br>aur aaya...</h1><div class="na">#N/A</div><p class="sub">Data sahi hai, phir bhi match nahi?<br>Extra space, capital letters,<br>number stored as text...</p></div>
+
+<div class="scene" id="s2"><div class="tag">Smart Lookup</div><h2>Ab #N/A ka<br>jhanjhat khatam</h2>
+<table class="t"><tr><th>Aapki list</th><th>Master</th><th></th></tr>
+<tr><td>"ABC Ltd␣"</td><td>abc ltd</td><td class="ok">Found</td></tr>
+<tr><td>00123</td><td>123</td><td class="ok">Found</td></tr>
+<tr><td>Mehta&nbsp;Steel</td><td>MEHTA STEEL</td><td class="ok">Found</td></tr></table>
+<p class="sub">Har row batata hai kaise match hua.<br>Formula bhi: <b>=SMARTLOOKUP()</b></p></div>
+
+<div class="scene" id="s3"><div class="tag">AI Formula</div><h2>Apne shabdon mein likho,<br>formula ready</h2><div class="shot" style="width:940px"><img src="img/11-ai-formula.png"></div><p class="sub">Koi formula yaad rakhne ki zaroorat nahi</p></div>
+
+<div class="scene" id="e1"><div class="tag">Dashboard Studio</div><h2>Dashboard banana<br>ab aur aasaan</h2><p class="sub">Number chuno, tick karo, colour chuno.<br>Bas.</p><div class="shot" style="width:600px;margin-top:50px"><img src="img/easy-crop.png"></div></div>
+
+<div class="scene" id="e2"><div class="tag">Right-click</div><h2>Kisi bhi chart pe<br>right-click karo</h2><div class="shot" style="width:860px"><img src="img/rc-crop.png"></div><p class="sub">Type, colour, Top 10, sab turant.<br>Galti hui? Ctrl+Z</p></div>
+
+<div class="scene" id="s4"><div class="tag">Sheet Navigator</div><h2>50 sheets?<br>Ek second mein jump</h2><div style="margin-top:50px"><span class="key">Ctrl</span>+<span class="key">Shift</span>+<span class="key">J</span></div><div class="shot" style="width:880px;margin-top:60px"><img src="img/8-sheet-navigator.png"></div></div>
+
+<div class="scene" id="s5"><div class="tag">Sheet Manager</div><h2>Hide, rename, colour<br>sab ek saath</h2><div class="shot" style="width:940px"><img src="img/10-sheet-manager.png"></div></div>
+
+<div class="scene" id="s6"><div class="tag">Formula Library</div><h2>41 ready formulas</h2><p class="sub">Age, overdue days, GST, EMI,<br>2-condition lookup...<br>Cells chuno, formula likh diya</p><div class="shot" style="width:860px"><img src="img/9-formula-library.png"></div></div>
+
+<div class="scene" id="s7"><div class="tag">Web Table</div><h2>Report ko web page<br>banao, 1 click mein</h2><div class="shot" style="width:940px"><img src="img/12-web-table.png"></div><p class="sub">Search, filter, total, phone pe bhi</p></div>
+
+<div class="scene" id="s8"><div class="tag">Aur bhi bahut kuch</div><h2>90 tools, ek tab</h2><div class="grid">
+<div class="cell">Reconcile<small>Books vs statement, GSTR-2B</small></div><div class="cell">Fuzzy Merge<small>Milte-julte naam match</small></div>
+<div class="cell">Duplicate Payments<small>Do baar paid bills</small></div><div class="cell">Dashboards<small>78 designs, free</small></div>
+<div class="cell">Split to PDFs<small>Har party ki alag PDF</small></div><div class="cell">Smart Validation<small>PAN, GSTIN, mobile</small></div>
+<div class="cell">Focus Cell<small>Row-column highlight</small></div><div class="cell">India pack<small>Rupees in words, FY</small></div></div></div>
+
+<div class="scene" id="s9"><div class="tag">My Impact</div><h2>Dekho kitna<br>time bacha</h2><div class="shot" style="width:940px"><img src="img/1-my-impact.png"></div><p class="sub">Streak, milestones aur bonus Pro runs</p></div>
+
+<div class="scene" id="s10"><div class="tag">DocBrisk for Excel</div><h2>Pehle 7 din<br>sab Pro tools free</h2>
+<div class="price"><div class="per">Uske baad Pro</div><div class="big">₹999</div><div class="per">saal ka, sirf ₹2.8 roz</div>
+<div class="list">✓ Dashboards aur roz ke tools hamesha free<br>✓ Data aapke PC par hi rehta hai<br>✓ Excel 2013 se 365 tak</div></div>
+<div class="pill">docbrisk.com/addins</div></div>
+
+<div class="brand">DocBrisk for Excel</div><div class="bar"><i id="bar"></i></div>
+<script>
+// [scene, start, end] in seconds
+const S=[['s1',0,6],['s2',6,13.5],['s3',13.5,19.5],['e1',19.5,26.5],['e2',26.5,33],['s4',33,38.5],['s5',38.5,43],['s6',43,48],['s7',48,53],['s8',53,59.5],['s9',59.5,64],['s10',64,72]];
+const T=72, F=0.45;
+const ease=x=>x<0?0:x>1?1:1-Math.pow(1-x,3);
+function render(t){
+  for(const [id,a,b] of S){
+    const el=document.getElementById(id);
+    let o=0, y=60, sc=1;
+    if(t>=a-F && t<=b+F){
+      const inn=ease((t-a+F)/(F*2)), out=id==='s10'?1:ease((b+F-t)/(F*2));
+      o=Math.min(inn,out); y=(1-inn)*60-(1-out)*40;
+      sc=1+0.02*((t-a)/(b-a));      // slow push-in
+    }
+    el.style.opacity=o; el.style.transform=`translateY(${y}px) scale(${sc})`;
+    // the screenshot drifts a little, like a camera
+    const img=el.querySelector('.shot'); if(img) img.style.transform=`translateY(${-12*((t-a)/(b-a))}px)`;
+  }
+  document.getElementById('bar').style.width=(100*t/T)+'%';
+}
+window.render=render; window.TOTAL=T; render(0);
+</script></body></html>
